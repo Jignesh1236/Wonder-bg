@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WonderBG — Documentation</title>
+  <script src="wonder-bg.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font:   system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --mono:   'SF Mono', 'Fira Code', 'Consolas', monospace;
+      --accent: #20b2aa;
+      --accent2: #7dd3fc;
+      --bg:     #07090d;
+      --surface:#0d1117;
+      --border: rgba(255,255,255,0.07);
+      --text:   #c9d1d9;
+      --muted:  rgba(255,255,255,0.35);
+      --sidebar-w: 220px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: rgba(10,13,18,0.92);
+      backdrop-filter: blur(16px);
+      border-right: 1px solid var(--border);
+      padding: 28px 0;
+      overflow-y: auto;
+      z-index: 50;
+      display: flex; flex-direction: column; gap: 0;
+    }
+
+    .sb-logo {
+      font-size: 15px; font-weight: 800; color: #fff;
+      padding: 0 22px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .sb-logo span { color: var(--accent); }
+
+    .sb-section {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+      padding: 12px 22px 6px;
+    }
+
+    .sb-link {
+      display: block; padding: 6px 22px;
+      font-size: 13px; font-weight: 500;
+      color: rgba(255,255,255,0.45);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.14s;
+    }
+    .sb-link:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
+    .sb-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(32,178,170,0.06); }
+
+    /* ── Content ── */
+    #content {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      max-width: 780px;
+      padding: 56px 48px 120px;
+    }
+
+    /* headings */
+    h1 {
+      font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em;
+      color: #fff; line-height: 1.1; margin-bottom: 14px;
+    }
+    h1 .hl { color: var(--accent); }
+
+    h2 {
+      font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em;
+      color: #fff; margin: 52px 0 16px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    }
+
+    h3 {
+      font-size: 1rem; font-weight: 700; color: rgba(255,255,255,0.85);
+      margin: 28px 0 10px;
+    }
+
+    p { color: var(--text); margin-bottom: 14px; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    strong { color: rgba(255,255,255,0.85); font-weight: 700; }
+
+    /* hero subtitle */
+    .lead {
+      font-size: 1.05rem; color: var(--muted); margin-bottom: 32px; line-height: 1.6;
+    }
+
+    /* badges */
+    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(32,178,170,0.1); border: 1px solid rgba(32,178,170,0.25);
+      border-radius: 100px; padding: 3px 12px;
+      font-size: 12px; font-weight: 700; color: var(--accent);
+    }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow-x: auto;
+      padding: 18px 20px; margin: 14px 0 20px;
+      position: relative;
+    }
+    code {
+      font-family: var(--mono);
+      font-size: 13px; line-height: 1.65;
+      color: #e8eaed;
+    }
+
+    /* inline code */
+    p code, li code, td code {
+      background: rgba(255,255,255,0.07);
+      border-radius: 5px; padding: 2px 6px;
+      font-size: 12.5px; color: var(--accent2);
+    }
+
+    .code-label {
+      position: absolute; top: 10px; right: 14px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      font-family: var(--font);
+    }
+
+    /* copy btn */
+    .pre-wrap { position: relative; }
+    .copy-code {
+      position: absolute; top: 10px; right: 12px;
+      background: rgba(255,255,255,0.06); border: none;
+      border-radius: 6px; padding: 4px 10px;
+      font-size: 11px; font-weight: 700;
+      color: var(--muted); cursor: pointer;
+      font-family: var(--font); transition: all 0.15s;
+    }
+    .copy-code:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .copy-code.ok { color: #4ade80; }
+
+    /* syntax highlight helpers */
+    .k  { color: #ff79c6; }   /* keyword */
+    .s  { color: #f1fa8c; }   /* string */
+    .c  { color: #6272a4; }   /* comment */
+    .p  { color: var(--accent); }  /* property / attr */
+    .v  { color: #bd93f9; }   /* value / class */
+    .fn { color: #50fa7b; }   /* function */
+    .t  { color: var(--accent2); } /* tag */
+    .a  { color: #ffb86c; }   /* attribute */
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; margin: 14px 0 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 8px 14px;
+      font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 9px 14px; border-bottom: 1px solid var(--border);
+      font-size: 13.5px; color: var(--text); vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.025); }
+    td:first-child code { color: var(--accent); }
+
+    /* ── Preset swatches ── */
+    .preset-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px; margin: 14px 0 20px;
+    }
+    .preset-swatch {
+      border-radius: 12px; overflow: hidden; height: 80px;
+      position: relative;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .preset-name {
+      position: absolute; bottom: 8px; left: 10px;
+      font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+      text-transform: capitalize; color: rgba(255,255,255,0.85);
+      text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+    }
+
+    /* ── Live demo inset ── */
+    .demo-box {
+      border-radius: 14px; overflow: hidden;
+      border: 1px solid var(--border);
+      margin: 14px 0 20px;
+    }
+    .demo-inner {
+      position: relative; height: 130px;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: rgba(32,178,170,0.06);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 16px; margin: 14px 0 20px;
+      font-size: 13.5px; line-height: 1.55;
+    }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Section anchor ── */
+    section { scroll-margin-top: 24px; }
+
+    /* ── Divider ── */
+    .hr { height: 1px; background: var(--border); margin: 40px 0; }
+
+    /* ── Live demo bar ── */
+    #try-bar {
+      position: fixed; bottom: 24px; right: 32px; z-index: 40;
+    }
+    .try-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--accent); color: #050c0c;
+      padding: 10px 20px; border-radius: 100px;
+      font-size: 13px; font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 6px 24px rgba(32,178,170,0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .try-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(32,178,170,0.5); text-decoration: none; color: #050c0c; }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      #sidebar { width: 100%; position: static; height: auto; flex-direction: row; flex-wrap: wrap; padding: 14px; }
+      #content { margin-left: 0; padding: 24px 18px 80px; }
+      .sb-section { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav id="sidebar">
+  <div class="sb-logo">Wonder<span>BG</span></div>
+
+  <div class="sb-section">Getting started</div>
+  <a class="sb-link active" href="#install">Installation</a>
+  <a class="sb-link" href="#quickstart">Quick start</a>
+
+  <div class="sb-section">Usage</div>
+  <a class="sb-link" href="#css-class">CSS class</a>
+  <a class="sb-link" href="#data-attrs">Data attributes</a>
+  <a class="sb-link" href="#css-vars">CSS variables</a>
+  <a class="sb-link" href="#js-api">JavaScript API</a>
+
+  <div class="sb-section">Modes</div>
+  <a class="sb-link" href="#mode-gradient">Gradient</a>
+  <a class="sb-link" href="#mode-tint">Tint on Photo</a>
+  <a class="sb-link" href="#mode-grain">Grain on Photo</a>
+  <a class="sb-link" href="#mode-text">Gradient Text</a>
+
+  <div class="sb-section">Reference</div>
+  <a class="sb-link" href="#presets">Presets</a>
+  <a class="sb-link" href="#config">Config options</a>
+  <a class="sb-link" href="#static-api">Static API</a>
+  <a class="sb-link" href="#perf">Performance</a>
+  <a class="sb-link" href="#typescript">TypeScript</a>
+</nav>
+
+<!-- ── Content ── -->
+<main id="content">
+
+  <!-- Hero -->
+  <section id="install">
+    <h1>Wonder<span class="hl">BG</span> Docs</h1>
+    <p class="lead">Zero-dependency animated gradient backgrounds. One script tag, ten presets, full JS API.</p>
+    <div class="badge-row">
+      <span class="badge">v1.3.0</span>
+      <span class="badge">No dependencies</span>
+      <span class="badge">~25 KB</span>
+      <span class="badge">MIT</span>
+    </div>
+
+    <h2 id="install">Installation</h2>
+    <p>Copy <code>wonder-bg.js</code> into your project and add a single script tag. No npm, no bundler.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="t">&lt;script</span> <span class="a">src</span>=<span class="s">"wonder-bg.js"</span><span class="t">&gt;&lt;/script&gt;</span></code></pre>
+      <button class="copy-code" onclick="copyCode(this, '<script src=\"wonder-bg.js\"><\/script>')">Copy</button>
+    </div>
+
+    <div class="callout">
+      <span class="callout-icon">💡</span>
+      <span>Place the script in <code>&lt;head&gt;</code> or just before <code>&lt;/body&gt;</code>. Auto-init runs on <code>DOMContentLoaded</code> so either works.</span>
+    </div>
+  </section>
+
+  <!-- Quick start -->
+  <section id="quickstart">
+    <h2>Quick start</h2>
+    <p>The fastest way — add a <code>wb-{preset}</code> class to any element. WonderBG auto-discovers and animates it.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="c">&lt;!-- Step 1: add the script --&gt;</span>
+<span class="t">&lt;script</span> <span class="a">src</span>=<span class="s">"wonder-bg.js"</span><span class="t">&gt;&lt;/script&gt;</span>
+
+<span class="c">&lt;!-- Step 2: add a class --&gt;</span>
+<span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"wb-aurora"</span><span class="t">&gt;&lt;/div&gt;</span></code></pre>
+      <button class="copy-code" onclick="copyCode(this, '<script src=\'wonder-bg.js\'></\script>\n<div class=\'wb-aurora\'></div>')">Copy</button>
+    </div>
+
+    <p>The element fills its container. Make sure it has a defined <code>width</code> and <code>height</code> (or set via CSS).</p>
+
+    <!-- Live preview -->
+    <div class="demo-box">
+      <div class="demo-inner" id="demo-quickstart"></div>
+    </div>
+  </section>
+
+  <!-- CSS class -->
+  <section id="css-class">
+    <h2>CSS class shortcuts</h2>
+    <p>Any of the 10 preset names work as a class: <code>wb-aurora</code>, <code>wb-sunset</code>, <code>wb-ocean</code>, etc.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"wb-aurora"</span><span class="t">&gt;&lt;/div&gt;</span>
+<span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"wb-neon"</span><span class="t">&gt;&lt;/div&gt;</span>
+<span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"wb-sunset"</span><span class="t">&gt;&lt;/div&gt;</span></code></pre>
+      <button class="copy-code" onclick="copyCode(this, '<div class=\'wb-aurora\'></div>')">Copy</button>
+    </div>
+  </section>
+
+  <!-- Data attributes -->
+  <section id="data-attrs">
+    <h2>Data attributes</h2>
+    <p>Use <code>data-wb-background</code> (and optionally <code>data-wb-background-mode</code>) for declarative setup — great on <code>&lt;img&gt;</code> elements.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="c">&lt;!-- gradient (default) --&gt;</span>
+<span class="t">&lt;div</span> <span class="a">data-wb-background</span>=<span class="s">"ocean"</span><span class="t">&gt;&lt;/div&gt;</span>
+
+<span class="c">&lt;!-- tint overlay on a photo --&gt;</span>
+<span class="t">&lt;img</span> <span class="a">src</span>=<span class="s">"photo.jpg"</span>
+     <span class="a">data-wb-background</span>=<span class="s">"sunset"</span>
+     <span class="a">data-wb-background-mode</span>=<span class="s">"tint"</span> <span class="t">/&gt;</span>
+
+<span class="c">&lt;!-- grain overlay on a photo --&gt;</span>
+<span class="t">&lt;img</span> <span class="a">src</span>=<span class="s">"photo.jpg"</span>
+     <span class="a">data-wb-background</span>=<span class="s">"mono"</span>
+     <span class="a">data-wb-background-mode</span>=<span class="s">"grain"</span> <span class="t">/&gt;</span></code></pre>
+      <button class="copy-code" onclick="copyCode(this, '<div data-wb-background=\'ocean\'></div>')">Copy</button>
+    </div>
+  </section>
+
+  <!-- CSS vars -->
+  <section id="css-vars">
+    <h2>CSS custom properties</h2>
+    <p>Fine-tune speed, blur, grain, and interactivity inline — no JS needed.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"wb-aurora"</span> <span class="a">style</span>=<span class="s">"
+  --wb-background-speed: 2;
+  --wb-background-blur: 40;
+  --wb-background-grain: 0.10;
+  --wb-background-interactive: true;
+"</span><span class="t">&gt;&lt;/div&gt;</span></code></pre>
+      <button class="copy-code" onclick="copyCode(this, '<div class=\'wb-aurora\' style=\'--wb-background-speed:2;--wb-background-blur:40;\'></div>')">Copy</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Variable</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>--wb-background-speed</code></td><td>number</td><td><code>1</code></td><td>Animation speed multiplier</td></tr>
+          <tr><td><code>--wb-background-blur</code></td><td>number (px)</td><td>preset</td><td>Gaussian blur amount</td></tr>
+          <tr><td><code>--wb-background-grain</code></td><td>0 – 0.4</td><td>preset</td><td>Film-grain intensity</td></tr>
+          <tr><td><code>--wb-background-interactive</code></td><td><code>true</code> / <code>false</code></td><td><code>false</code></td><td>Blobs follow cursor</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- JS API -->
+  <section id="js-api">
+    <h2>JavaScript API</h2>
+
+    <h3><code>WonderBG.create(element, config)</code> → instance</h3>
+    <p>Creates and starts an animation on <code>element</code>. Returns an instance with <code>update()</code> and <code>destroy()</code>.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="k">const</span> inst = WonderBG.<span class="fn">create</span>(document.<span class="fn">getElementById</span>(<span class="s">'hero'</span>), {
+  preset: <span class="s">'aurora'</span>,
+  mode:   <span class="s">'gradient'</span>,
+  speed:  <span class="v">1.5</span>,
+  blur:   <span class="v">50</span>,
+  grain:  <span class="v">0.05</span>,
+  interactive: <span class="v">true</span>,
+  colors: [
+    <span class="s">'rgba(32,178,170,0.85)'</span>,
+    <span class="s">'rgba(0,128,128,0.70)'</span>,
+    <span class="s">'rgba(22,33,62,0.90)'</span>
+  ]
+});</code></pre>
+      <button class="copy-code" onclick="copyCode(this, `const inst = WonderBG.create(el, { preset: 'aurora', speed: 1.5 });`)">Copy</button>
+    </div>
+
+    <h3><code>instance.update(config)</code></h3>
+    <p>Live-update any config property. Changes take effect immediately — the animation transitions smoothly.</p>
+
+    <div class="pre-wrap">
+      <pre><code>inst.<span class="fn">update</span>({ preset: <span class="s">'neon'</span>, speed: <span class="v">2</span> });
+inst.<span class="fn">update</span>({ interactive: <span class="v">true</span> });
+inst.<span class="fn">update</span>({ colors: [<span class="s">'rgba(255,0,150,0.8)'</span>, <span class="s">'rgba(0,220,255,0.7)'</span>, <span class="s">'rgba(180,0,255,0.6)'</span>] });</code></pre>
+      <button class="copy-code" onclick="copyCode(this, `inst.update({ preset: 'neon', speed: 2 });`)">Copy</button>
+    </div>
+
+    <h3><code>instance.destroy()</code></h3>
+    <p>Stops the animation, cancels <code>requestAnimationFrame</code>, and removes all injected DOM nodes. Runs automatically if the host element is removed from the DOM.</p>
+
+    <div class="pre-wrap">
+      <pre><code>inst.<span class="fn">destroy</span>();</code></pre>
+    </div>
+  </section>
+
+  <div class="hr"></div>
+
+  <!-- Modes -->
+  <section id="mode-gradient">
+    <h2>Mode — Gradient</h2>
+    <p>The default mode. Fills the element with animated color blobs. Works on any block-level container.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="c">&lt;!-- HTML --&gt;</span>
+<span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"wb-sunset"</span> <span class="a">style</span>=<span class="s">"height:200px; border-radius:16px"</span><span class="t">&gt;&lt;/div&gt;</span>
+
+<span class="c">&lt;!-- JS --&gt;</span>
+<span class="k">const</span> inst = WonderBG.<span class="fn">create</span>(el, { preset: <span class="s">'sunset'</span>, mode: <span class="s">'gradient'</span> });</code></pre>
+    </div>
+
+    <div class="demo-box">
+      <div class="demo-inner" id="demo-gradient"></div>
+    </div>
+  </section>
+
+  <section id="mode-tint">
+    <h2>Mode — Tint on Photo</h2>
+    <p>Gradient blobs composited over an image using <code>mix-blend-mode: soft-light</code>. The image stays visible; the gradient adds warmth and atmosphere.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="t">&lt;img</span> <span class="a">src</span>=<span class="s">"photo.jpg"</span>
+     <span class="a">data-wb-background</span>=<span class="s">"ocean"</span>
+     <span class="a">data-wb-background-mode</span>=<span class="s">"tint"</span> <span class="t">/&gt;</span>
+
+<span class="c">&lt;!-- JS equivalent --&gt;</span>
+WonderBG.<span class="fn">create</span>(imgEl, { preset: <span class="s">'ocean'</span>, mode: <span class="s">'tint'</span>, blur: <span class="v">30</span> });</code></pre>
+    </div>
+  </section>
+
+  <section id="mode-grain">
+    <h2>Mode — Grain on Photo</h2>
+    <p>Film-grain noise overlaid on the photo — no colour blobs, just texture. Good for a cinematic, analog feel.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="t">&lt;img</span> <span class="a">src</span>=<span class="s">"photo.jpg"</span>
+     <span class="a">data-wb-background</span>=<span class="s">"mono"</span>
+     <span class="a">data-wb-background-mode</span>=<span class="s">"grain"</span> <span class="t">/&gt;</span></code></pre>
+    </div>
+  </section>
+
+  <section id="mode-text">
+    <h2>Mode — Gradient Text</h2>
+    <p>Use WonderBG's preset colors <em>as the text color</em> via CSS <code>background-clip: text</code>. No canvas — pure CSS gradient derived from the preset's blob colors.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="c">// 1. Pull the preset colors</span>
+<span class="k">const</span> colors = WonderBG.presets.<span class="p">neon</span>.blobs.<span class="fn">map</span>(b => b.color);
+
+<span class="c">// 2. Build a CSS gradient</span>
+<span class="k">const</span> grad = <span class="s">`linear-gradient(135deg, <span class="v">${colors.join(', ')}</span>)`</span>;
+
+<span class="c">// 3. Clip to text</span>
+<span class="k">const</span> el = document.<span class="fn">querySelector</span>(<span class="s">'h1'</span>);
+el.style.backgroundImage       = grad;
+el.style.backgroundSize        = <span class="s">'200% 200%'</span>;
+el.style.webkitBackgroundClip  = <span class="s">'text'</span>;
+el.style.backgroundClip        = <span class="s">'text'</span>;
+el.style.color                 = <span class="s">'transparent'</span>;</code></pre>
+      <button class="copy-code" onclick="copyCode(this, `const colors = WonderBG.presets.neon.blobs.map(b => b.color);\nconst grad = \`linear-gradient(135deg, \${colors.join(', ')})\`;\nel.style.backgroundImage = grad;\nel.style.webkitBackgroundClip = 'text';\nel.style.backgroundClip = 'text';\nel.style.color = 'transparent';`)">Copy</button>
+    </div>
+
+    <!-- Live text demo -->
+    <div style="padding: 32px 0 16px; text-align:center;">
+      <div id="demo-text-el" style="
+        font-size: clamp(2rem, 6vw, 3.5rem);
+        font-weight: 900; letter-spacing: -0.04em;
+        background-size: 200% 200%;
+        -webkit-background-clip: text; background-clip: text;
+        color: transparent;
+        animation: gradShift 5s ease infinite;
+      ">Animated gradient text</div>
+    </div>
+    <style>
+      @keyframes gradShift {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+    </style>
+  </section>
+
+  <div class="hr"></div>
+
+  <!-- Presets -->
+  <section id="presets">
+    <h2>Presets</h2>
+    <p>Ten built-in presets. Each defines a background color, three animated blob definitions, default blur, and grain.</p>
+
+    <div class="preset-grid" id="presetGrid"></div>
+
+    <h3>Accessing preset data</h3>
+    <div class="pre-wrap">
+      <pre><code><span class="c">// All presets</span>
+WonderBG.<span class="p">presets</span>
+
+<span class="c">// One preset's blob colors</span>
+WonderBG.presets.<span class="p">aurora</span>.blobs.<span class="fn">map</span>(b => b.color)
+<span class="c">// → ['rgba(32,178,170,0.85)', 'rgba(0,128,128,0.70)', 'rgba(22,33,62,0.90)']</span>
+
+<span class="c">// Background color</span>
+WonderBG.presets.<span class="p">aurora</span>.background  <span class="c">// '#0d1117'</span></code></pre>
+    </div>
+
+    <h3>Register a custom preset</h3>
+    <div class="pre-wrap">
+      <pre><code>WonderBG.<span class="fn">registerPreset</span>(<span class="s">'candy'</span>, {
+  background: <span class="s">'#1a001a'</span>,
+  blobs: [
+    { color: <span class="s">'rgba(255,100,200,0.8)'</span>, baseX: <span class="v">0.3</span>, baseY: <span class="v">0.4</span>,
+      radius: <span class="v">0.5</span>, orbitX: <span class="v">0.1</span>, orbitY: <span class="v">0.08</span>, phase: <span class="v">0</span>,   speed: <span class="v">0.6</span> },
+    { color: <span class="s">'rgba(120,0,255,0.7)'</span>,  baseX: <span class="v">0.7</span>, baseY: <span class="v">0.6</span>,
+      radius: <span class="v">0.55</span>, orbitX: <span class="v">0.09</span>, orbitY: <span class="v">0.1</span>, phase: <span class="v">2.1</span>, speed: <span class="v">0.45</span> },
+    { color: <span class="s">'rgba(255,50,100,0.6)'</span>,  baseX: <span class="v">0.5</span>, baseY: <span class="v">0.2</span>,
+      radius: <span class="v">0.45</span>, orbitX: <span class="v">0.12</span>, orbitY: <span class="v">0.06</span>, phase: <span class="v">4.2</span>, speed: <span class="v">0.5</span> }
+  ],
+  grain: <span class="v">0.05</span>,
+  blur:  <span class="v">60</span>
+});
+
+<span class="c">// Then use it like any built-in preset</span>
+WonderBG.<span class="fn">create</span>(el, { preset: <span class="s">'candy'</span> });</code></pre>
+      <button class="copy-code" onclick="copyCode(this, `WonderBG.registerPreset('candy', { background: '#1a001a', blobs: [...], grain: 0.05, blur: 60 });`)">Copy</button>
+    </div>
+  </section>
+
+  <!-- Config ref -->
+  <section id="config">
+    <h2>Config options</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Key</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>preset</code></td><td>string</td><td><code>'aurora'</code></td><td>Any built-in or registered preset name</td></tr>
+          <tr><td><code>mode</code></td><td><code>'gradient'</code> | <code>'tint'</code> | <code>'grain'</code></td><td><code>'gradient'</code></td><td>Rendering mode</td></tr>
+          <tr><td><code>speed</code></td><td>number</td><td><code>1</code></td><td>Animation speed (0.1 – 4+). 2 = 2× faster</td></tr>
+          <tr><td><code>blur</code></td><td>number</td><td>preset value</td><td>Gaussian blur in px. Capped at 70 (35 on mobile)</td></tr>
+          <tr><td><code>grain</code></td><td>number</td><td>preset value</td><td>Film-grain intensity (0 = off, 0.4 = heavy)</td></tr>
+          <tr><td><code>interactive</code></td><td>boolean</td><td><code>false</code></td><td>Blob positions follow mouse / touch</td></tr>
+          <tr><td><code>colors</code></td><td>string[]</td><td>preset blobs</td><td>Override blob colors. Must be <code>rgba(r,g,b,a)</code> strings, one per blob.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Static API -->
+  <section id="static-api">
+    <h2>Static API</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>WonderBG.create(el, cfg)</code></td><td>function</td><td>Create instance on element</td></tr>
+          <tr><td><code>WonderBG.autoInit()</code></td><td>function</td><td>Manually trigger auto-init scan</td></tr>
+          <tr><td><code>WonderBG.presets</code></td><td>object</td><td>All preset definitions</td></tr>
+          <tr><td><code>WonderBG.registerPreset(name, def)</code></td><td>function</td><td>Add a custom preset</td></tr>
+          <tr><td><code>GradFrame</code></td><td>alias</td><td>Legacy alias for <code>WonderBG</code> (backward compat)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Performance -->
+  <section id="perf">
+    <h2>Performance</h2>
+    <ul style="padding-left:20px; line-height:2;">
+      <li>One <code>&lt;canvas&gt;</code> per element, rendered via <code>requestAnimationFrame</code>.</li>
+      <li><strong>Auto-pauses</strong> when element scrolls off-screen (<code>IntersectionObserver</code>).</li>
+      <li><strong>Auto-destroys</strong> when element is removed from DOM (<code>MutationObserver</code>).</li>
+      <li>Respects <code>prefers-reduced-motion</code> — pauses when the user prefers reduced motion.</li>
+      <li>Blur GPU-capped: <strong>≤ 35 px</strong> on mobile, <strong>≤ 70 px</strong> on desktop.</li>
+    </ul>
+  </section>
+
+  <!-- TypeScript -->
+  <section id="typescript">
+    <h2>TypeScript</h2>
+    <p>Include <code>wonder-bg.d.ts</code> in your project for full type support.</p>
+
+    <div class="pre-wrap">
+      <pre><code><span class="c">// tsconfig.json</span>
+{
+  <span class="p">"include"</span>: [<span class="s">"src"</span>, <span class="s">"wonder-bg.d.ts"</span>]
+}
+
+<span class="c">// usage.ts</span>
+<span class="k">import type</span> { WonderBGConfig, WonderBGInstance } <span class="k">from</span> <span class="s">'./wonder-bg.d.ts'</span>;
+
+<span class="k">const</span> cfg: WonderBGConfig = { preset: <span class="s">'ocean'</span>, speed: <span class="v">1.2</span> };
+<span class="k">const</span> inst: WonderBGInstance = WonderBG.<span class="fn">create</span>(el, cfg);</code></pre>
+    </div>
+  </section>
+
+  <!-- Browser support -->
+  <div class="hr"></div>
+  <p style="color:var(--muted); font-size:13px;">
+    <strong style="color:rgba(255,255,255,0.5)">Browser support:</strong>
+    Chrome 80+, Firefox 80+, Safari 14+, Edge 80+.
+    Requires: Canvas 2D, <code>mix-blend-mode</code>, <code>IntersectionObserver</code>.
+  </p>
+
+</main>
+
+<!-- Live demo button -->
+<div id="try-bar">
+  <a href="index.html" class="try-btn">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    Live demo
+  </a>
+</div>
+
+<script>
+/* ── Live preview demos ── */
+(function () {
+  var presets = ['aurora','sunset','ocean','forest','neon','ember','mono','void','meadow','chalkboard'];
+
+  /* quickstart demo */
+  var qs = document.getElementById('demo-quickstart');
+  if (qs) WonderBG.create(qs, { preset: 'aurora', speed: 1 });
+
+  /* gradient mode demo */
+  var gd = document.getElementById('demo-gradient');
+  if (gd) WonderBG.create(gd, { preset: 'sunset', speed: 0.9 });
+
+  /* gradient text */
+  var textEl = document.getElementById('demo-text-el');
+  if (textEl) {
+    var colors = WonderBG.presets.neon.blobs.map(function (b) { return b.color; });
+    textEl.style.backgroundImage = 'linear-gradient(135deg, ' + colors.join(', ') + ', ' + colors[0] + ')';
+  }
+
+  /* preset swatches */
+  var grid = document.getElementById('presetGrid');
+  if (grid) {
+    presets.forEach(function (name) {
+      var wrap = document.createElement('div');
+      wrap.className = 'preset-swatch';
+      var label = document.createElement('div');
+      label.className = 'preset-name';
+      label.textContent = name;
+      wrap.appendChild(label);
+      grid.appendChild(wrap);
+      WonderBG.create(wrap, { preset: name, speed: 0.6, blur: 30 });
+    });
+  }
+
+  /* ── sidebar active link on scroll ── */
+  var links = document.querySelectorAll('.sb-link');
+  var sections = Array.from(document.querySelectorAll('section[id]'));
+
+  function onScroll() {
+    var scrollY = window.scrollY + 80;
+    var active = sections[0];
+    sections.forEach(function (s) { if (s.offsetTop <= scrollY) active = s; });
+    links.forEach(function (l) {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + active.id);
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+
+/* ── copy code helper ── */
+function copyCode(btn, text) {
+  navigator.clipboard.writeText(text).then(function () {
+    btn.textContent = 'Copied!';
+    btn.classList.add('ok');
+    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
