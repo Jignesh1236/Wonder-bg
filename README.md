@@ -26,9 +26,9 @@
 
 ## Installation
 
-**CDN / self-hosted**
+**CDN**
 ```html
-<script src="wonder-bg.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/Jignesh1236/Wonder-bg@main/wonder-bg.js"></script>
 ```
 
 **No npm, no bundler, no build step.**  
