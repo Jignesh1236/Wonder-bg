@@ -1,5 +1,5 @@
 /*!
- * Wonder Backgrounds v1.3.0
+ * Wonder Backgrounds v1.4.0
  * Animated organic gradient backgrounds — drop-in, zero-dependency, framework-agnostic.
  *
  * Works on ANY element including <img>, <video>, <p>, <h1>, <button>, etc.
@@ -7,19 +7,27 @@
  *
  * Three syntaxes (all merge together, JS > data-* > CSS vars):
  *
- * 1. Auto-class:  <div class="wb-aurora"></div>
- *                 <div class="grad-bg" data-wb-background="aurora"></div>
+ * 1. CSS class:    <div class="wb-aurora"></div>
+ *                  <div class="wb-neon" style="height:200px; border-radius:16px;"></div>
  *
- * 2. CSS vars:    #el { --wb-background: forest; --wb-background-speed: 2; }
+ * 2. Data attrs:   <div data-wb-background="forest"></div>
+ *                  <img src="photo.jpg" data-wb-background="ocean" data-wb-background-mode="tint" />
  *
- * 3. JS API:      WonderBG.create('img.hero', { mode: 'grain', grain: 0.2 })
+ * 3. CSS vars:     #el { --wb-background: sunset; --wb-background-speed: 2; }
+ *
+ * 4. JS API:       WonderBG.create('img.hero', { preset: 'ember', mode: 'grain', grain: 0.2 })
  *
  * Modes:
  *   gradient (default) — full animated gradient + grain on dark background
- *   grain              — film-grain texture overlaid on existing content/images
  *   tint               — semi-transparent color overlay + blobs + grain on images
+ *   grain              — film-grain texture overlaid on existing content/images
  *
  * Available presets: aurora, sunset, ocean, forest, neon, ember, mono, void, meadow, chalkboard
+ *
+ * Key behaviours:
+ *   - Border-radius is preserved automatically (overflow:hidden applied + restored on destroy)
+ *   - Existing children layout is NOT disturbed (position/z-index only set when needed)
+ *   - Works on rounded cards, buttons, images — anything
  *
  * MIT License
  */
@@ -134,7 +142,7 @@
 
   const DEFAULTS = {
     preset: 'aurora',
-    mode: 'gradient',  // 'gradient' | 'grain' | 'tint'
+    mode: 'gradient',
     speed: 1,
     interactive: false,
     grain: null,
@@ -181,52 +189,62 @@
         const v = cs.getPropertyValue(name);
         if (v && v.trim()) return v.trim();
       }
-      return '';
+      return undefined;
     };
     return {
-      preset:      get('--wb-background',            '--js-background', '--grad-preset')       || undefined,
-      mode:        get('--wb-background-mode',       '--js-background-mode', '--grad-mode')    || undefined,
-      speed:       get('--wb-background-speed',      '--js-background-speed', '--grad-speed')  || undefined,
-      interactive: get('--wb-background-interactive','--js-background-interactive', '--grad-interactive') || undefined,
-      grain:       get('--wb-background-grain',      '--js-background-grain', '--grad-grain')  || undefined,
-      blur:        get('--wb-background-blur',       '--js-background-blur', '--grad-blur')    || undefined
+      preset:      get('--wb-background',             '--js-background', '--grad-preset'),
+      mode:        get('--wb-background-mode',        '--js-background-mode', '--grad-mode'),
+      speed:       get('--wb-background-speed',       '--js-background-speed', '--grad-speed'),
+      interactive: get('--wb-background-interactive', '--js-background-interactive', '--grad-interactive'),
+      grain:       get('--wb-background-grain',       '--js-background-grain', '--grad-grain'),
+      blur:        get('--wb-background-blur',        '--js-background-blur', '--grad-blur')
     };
   }
 
   function readDataAttrs(el) {
     const d = el.dataset || {};
     return {
-      preset:      d.wbBackground      || d.jsBackground      || d.gradPreset        || d.wonderBgPreset,
-      mode:        d.wbBackgroundMode  || d.jsBackgroundMode  || d.gradMode          || d.wonderBgMode,
-      speed:       d.wbBackgroundSpeed || d.jsBackgroundSpeed || d.gradSpeed         || d.wonderBgSpeed,
-      interactive: d.wbInteractive     || d.jsInteractive     || d.gradInteractive   || d.wonderBgInteractive,
-      grain:       d.wbGrain           || d.jsGrain           || d.gradGrain         || d.wonderBgGrain,
-      blur:        d.wbBlur            || d.jsBlur            || d.gradBlur          || d.wonderBgBlur
+      preset:      d.wbBackground      || d.jsBackground      || d.gradPreset        || d.wonderBgPreset      || undefined,
+      mode:        d.wbBackgroundMode  || d.jsBackgroundMode  || d.gradMode          || d.wonderBgMode        || undefined,
+      speed:       d.wbBackgroundSpeed || d.jsBackgroundSpeed || d.gradSpeed         || d.wonderBgSpeed       || undefined,
+      interactive: d.wbInteractive     || d.jsInteractive     || d.gradInteractive   || d.wonderBgInteractive || undefined,
+      grain:       d.wbGrain           || d.jsGrain           || d.gradGrain         || d.wonderBgGrain       || undefined,
+      blur:        d.wbBlur            || d.jsBlur            || d.gradBlur          || d.wonderBgBlur        || undefined
+    };
+  }
+
+  // pick() returns the first defined value from JS config → data-attrs → CSS vars.
+  // Returns undefined if none found — callers supply their own fallback.
+  function makePick(jsConfig, data, css) {
+    return function pick(key) {
+      if (jsConfig && jsConfig[key] !== undefined) return jsConfig[key];
+      if (data[key]  !== undefined) return data[key];
+      if (css[key]   !== undefined) return css[key];
+      return undefined;
     };
   }
 
   function resolveConfig(el, jsConfig) {
-    const css = readCssVars(el);
+    const css  = readCssVars(el);
     const data = readDataAttrs(el);
     const presetClass = detectPresetClass(el);
+    const pick = makePick(jsConfig, data, css);
 
-    const pick = (key) =>
-      (jsConfig && jsConfig[key] !== undefined) ? jsConfig[key] :
-      (data[key] !== undefined ? data[key] :
-      (css[key] !== undefined ? css[key] : DEFAULTS[key]));
+    // Priority: JS > data-* > CSS vars > class preset > defaults
+    const preset = pick('preset') || presetClass || DEFAULTS.preset;
+    const mode   = pick('mode')   || DEFAULTS.mode;
+    const speed  = parseNum(pick('speed'), DEFAULTS.speed);
+    const interactive = parseBool(pick('interactive'), DEFAULTS.interactive);
 
-    const merged = {};
-    // wb-{preset} class has lowest priority — overridden by data-* and JS config
-    merged.preset  = pick('preset') || presetClass || DEFAULTS.preset;
-    merged.mode    = pick('mode')   || DEFAULTS.mode;
-    merged.speed   = parseNum(pick('speed'), DEFAULTS.speed);
-    merged.interactive = parseBool(pick('interactive'), DEFAULTS.interactive);
-    merged.grain   = pick('grain');
-    merged.grain   = (merged.grain === undefined || merged.grain === null) ? null : parseNum(merged.grain, null);
-    merged.blur    = pick('blur');
-    merged.blur    = (merged.blur  === undefined || merged.blur  === null) ? null : parseNum(merged.blur,  null);
-    merged.colors  = (jsConfig && jsConfig.colors) ? jsConfig.colors : DEFAULTS.colors;
-    return merged;
+    let grain = pick('grain');
+    grain = (grain === undefined || grain === null) ? null : parseNum(grain, null);
+
+    let blur = pick('blur');
+    blur = (blur === undefined || blur === null) ? null : parseNum(blur, null);
+
+    const colors = (jsConfig && jsConfig.colors) ? jsConfig.colors : null;
+
+    return { preset, mode, speed, interactive, grain, blur, colors };
   }
 
   // ── Instance ─────────────────────────────────────────────────────────────────
@@ -238,11 +256,14 @@
       this.pointer = { x: 0.5, y: 0.5, targetX: 0.5, targetY: 0.5 };
       this._raf = null;
       this._destroyed = false;
-      this._paused = false;       // true when offscreen (IntersectionObserver)
+      this._paused = false;
       this._reducedMotion = prefersReducedMotion;
       this._noiseCanvas = null;
-      this._wrapper = null;       // auto-created wrapper div (for void elements)
-      this._container = null;     // where the canvas lives
+      this._wrapper = null;
+      this._container = null;
+      this._savedOverflow = null;    // restored on destroy
+      this._savedPosition = null;   // restored on destroy
+      this._modifiedChildren = [];  // track which children we touched
       this._buildDom();
       this._bindEvents();
       this._resize();
@@ -255,13 +276,24 @@
       let container;
 
       if (VOID_ELEMENTS.has(tag)) {
+        // Wrap void element so we can insert a canvas sibling
         const wrapper = document.createElement('div');
         wrapper.setAttribute('data-wonder-bg-wrapper', '');
-        wrapper.style.cssText = 'position:relative;display:inline-block;overflow:hidden;line-height:0;';
+
+        // Copy border-radius from the original element if present
         const cs = getComputedStyle(origEl);
-        if (origEl.style.width)  wrapper.style.width  = origEl.style.width;
-        if (origEl.style.height) wrapper.style.height = origEl.style.height;
-        if (cs.display === 'block' || cs.display === 'flex') wrapper.style.display = 'block';
+        const br = cs.borderRadius;
+        let wrapperCss = 'position:relative;overflow:hidden;line-height:0;';
+        if (origEl.style.display === 'block' || cs.display === 'block' || cs.display === 'flex') {
+          wrapperCss += 'display:block;';
+        } else {
+          wrapperCss += 'display:inline-block;';
+        }
+        if (origEl.style.width)  wrapperCss += 'width:'  + origEl.style.width  + ';';
+        if (origEl.style.height) wrapperCss += 'height:' + origEl.style.height + ';';
+        if (br && br !== '0px') wrapperCss += 'border-radius:' + br + ';';
+
+        wrapper.style.cssText = wrapperCss;
         origEl.parentNode.insertBefore(wrapper, origEl);
         wrapper.appendChild(origEl);
         origEl.style.display = 'block';
@@ -270,24 +302,46 @@
         this._wrapper  = wrapper;
         container = wrapper;
       } else {
-        if (getComputedStyle(origEl).position === 'static') origEl.style.position = 'relative';
+        // Non-void element: set position:relative only if needed
+        const cs = getComputedStyle(origEl);
+        if (cs.position === 'static') {
+          this._savedPosition = origEl.style.position || '';
+          origEl.style.position = 'relative';
+        }
+
+        // Ensure overflow:hidden so the canvas is clipped to border-radius
+        this._savedOverflow = origEl.style.overflow || '';
+        if (cs.overflow === 'visible' || cs.overflow === '') {
+          origEl.style.overflow = 'hidden';
+        }
+
+        // Only lift children above the canvas (z-index:0) if they don't
+        // already have a stacking context. We do NOT touch position — only
+        // z-index, and only when the child has none set at all.
         Array.from(origEl.children).forEach((child) => {
-          if (getComputedStyle(child).position === 'static') child.style.position = 'relative';
-          if (!child.style.zIndex) child.style.zIndex = '1';
+          if (child.hasAttribute('data-wonder-bg-canvas')) return;
+          const childCs = getComputedStyle(child);
+          const hasZIndex = childCs.zIndex !== 'auto';
+          if (!hasZIndex) {
+            child.style.zIndex = '1';
+            this._modifiedChildren.push(child);
+          }
         });
+
         container = origEl;
       }
 
       this._container = container;
 
-      const mode = this.config.mode;
+      // Create the canvas overlay
       const canvas = document.createElement('canvas');
       canvas.setAttribute('data-wonder-bg-canvas', '');
       canvas.style.cssText = [
         'position:absolute;inset:0;width:100%;height:100%;',
-        'display:block;pointer-events:none;'
+        'display:block;pointer-events:none;border-radius:inherit;'
       ].join('');
 
+      const mode = this.config.mode;
       if (mode === 'grain' || mode === 'tint') {
         canvas.style.mixBlendMode = 'soft-light';
         canvas.style.zIndex = '2';
@@ -295,11 +349,8 @@
         canvas.style.zIndex = '0';
       }
 
-      if (this._wrapper) {
-        container.appendChild(canvas);
-      } else {
-        container.insertBefore(canvas, container.firstChild);
-      }
+      // Insert canvas as first child so it renders behind content
+      container.insertBefore(canvas, container.firstChild);
 
       this.canvas = canvas;
       this.ctx    = canvas.getContext('2d');
@@ -329,13 +380,12 @@
         this._ro.observe(target);
       }
 
-      // ── IntersectionObserver: pause RAF when offscreen ──────────────────────
+      // Pause RAF when offscreen
       if (typeof IntersectionObserver !== 'undefined') {
         this._io = new IntersectionObserver(
           (entries) => {
             const visible = entries[0] && entries[0].isIntersecting;
             this._paused = !visible;
-            // Resume immediately when scrolled back into view
             if (!this._paused && !this._raf && !this._destroyed) {
               this._resumeRaf();
             }
@@ -345,7 +395,7 @@
         this._io.observe(target);
       }
 
-      // ── MutationObserver: auto-destroy when element is removed from DOM ──────
+      // Auto-destroy when element is removed from DOM
       if (typeof MutationObserver !== 'undefined') {
         const observeTarget = target.parentNode || document.body;
         this._mo = new MutationObserver(() => {
@@ -381,7 +431,6 @@
         this.pointer.y += (this.pointer.targetY - this.pointer.y) * 0.04;
         this._render(t);
         this._raf = null;
-        // After rendering, continue only if not paused
         if (!this._paused && !this._reducedMotion) {
           this._raf = requestAnimationFrame(loop);
         }
@@ -394,7 +443,6 @@
       const preset = PRESETS[this.config.preset] || PRESETS.aurora;
       const w = this.width, h = this.height;
       const mode  = this.config.mode;
-      // Cap blur for mobile performance
       const rawBlur = this.config.blur !== null ? this.config.blur : preset.blur;
       const blur    = Math.min(rawBlur, MAX_BLUR);
       const grain   = this.config.grain !== null ? this.config.grain : preset.grain;
@@ -530,6 +578,10 @@
           target.addEventListener('touchmove', this._onMove, { passive: true });
         }
       }
+
+      if (!this._raf && !this._paused && !this._destroyed) {
+        this._resumeRaf();
+      }
     }
 
     destroy() {
@@ -546,11 +598,29 @@
         target.removeEventListener('touchmove', this._onMove);
       }
       if (this.canvas && this.canvas.parentNode) this.canvas.parentNode.removeChild(this.canvas);
+
+      // Restore modified children z-indexes
+      this._modifiedChildren.forEach((child) => {
+        child.style.zIndex = '';
+      });
+      this._modifiedChildren = [];
+
+      // Restore container styles we added
+      if (!this._wrapper) {
+        if (this._savedPosition !== null) {
+          this.el.style.position = this._savedPosition;
+        }
+        if (this._savedOverflow !== null) {
+          this.el.style.overflow = this._savedOverflow;
+        }
+      }
+
       if (this._wrapper && this._wrapper.parentNode) {
         this._wrapper.parentNode.insertBefore(this.el, this._wrapper);
         this._wrapper.parentNode.removeChild(this._wrapper);
         this._wrapper = null;
       }
+
       const idx = global.WonderBG._instances.indexOf(this);
       if (idx > -1) global.WonderBG._instances.splice(idx, 1);
     }
@@ -558,7 +628,7 @@
 
   // ── Public API ───────────────────────────────────────────────────────────────
   const WonderBG = {
-    version: '1.3.0',
+    version: '1.4.0',
     presets: PRESETS,
     _instances: [],
 
@@ -579,10 +649,8 @@
     },
 
     autoInit() {
-      // Selectors: new wb-* attrs, legacy attrs, shorthand wb-{preset} classes
       const presetClassSel = PRESET_NAMES.map((n) => '.wb-' + n).join(',');
       const sel = [
-        '.grad-bg',
         '[data-wb-background]',
         '[data-wb-background-mode]',
         '[data-grad-preset]',
@@ -590,6 +658,7 @@
         '[data-js-background]',
         '[data-js-background-mode]',
         '[data-wonder-bg-preset]',
+        '.grad-bg',
         presetClassSel
       ].join(',');
       document.querySelectorAll(sel).forEach((el) => {
@@ -609,7 +678,6 @@
   };
 
   global.WonderBG = WonderBG;
-  // Backward-compat alias
   global.GradFrame = global.WonderBG;
 
   function boot() { global.WonderBG.autoInit(); }
