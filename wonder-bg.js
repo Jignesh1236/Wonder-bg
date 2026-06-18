@@ -1,5 +1,5 @@
 /*!
- * Wonder Backgrounds v1.4.0
+ * Wonder Backgrounds v1.5.0
  * Animated organic gradient backgrounds — drop-in, zero-dependency, framework-agnostic.
  *
  * Works on ANY element including <img>, <video>, <p>, <h1>, <button>, etc.
@@ -20,14 +20,20 @@
  * Modes:
  *   gradient (default) — full animated gradient + grain on dark background
  *   tint               — semi-transparent color overlay + blobs + grain on images
- *   grain              — film-grain texture overlaid on existing content/images
+ *   grain              — animated film-grain texture overlaid on existing content/images
  *
- * Available presets: aurora, sunset, ocean, forest, neon, ember, mono, void, meadow, chalkboard
+ * Available presets:
+ *   aurora, sunset, ocean, forest, neon, ember, mono, void, meadow, chalkboard,
+ *   galaxy, candy, arctic
  *
  * Key behaviours:
  *   - Border-radius is preserved automatically (overflow:hidden applied + restored on destroy)
  *   - Existing children layout is NOT disturbed (position/z-index only set when needed)
  *   - Works on rounded cards, buttons, images — anything
+ *   - Grain animates every frame (real film-grain flicker)
+ *   - Pauses automatically when off-screen (IntersectionObserver)
+ *   - Respects prefers-reduced-motion (renders one static frame instead of blank)
+ *   - Auto-destroys when element removed from DOM
  *
  * MIT License
  */
@@ -45,6 +51,21 @@
   // ── Reduced-motion preference ───────────────────────────────────────────────
   const prefersReducedMotion =
     global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── Colour lerp helper ──────────────────────────────────────────────────────
+  function parseRgba(str) {
+    const m = str.match(/[\d.]+/g);
+    if (!m) return [0, 0, 0, 1];
+    return [+m[0], +m[1], +m[2], m[3] !== undefined ? +m[3] : 1];
+  }
+  function lerpRgba(a, b, t) {
+    const ca = parseRgba(a), cb = parseRgba(b);
+    const r = ca[0] + (cb[0] - ca[0]) * t;
+    const g = ca[1] + (cb[1] - ca[1]) * t;
+    const bv = ca[2] + (cb[2] - ca[2]) * t;
+    const al = ca[3] + (cb[3] - ca[3]) * t;
+    return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(bv)},${al.toFixed(3)})`;
+  }
 
   // ── Presets ─────────────────────────────────────────────────────────────────
   const PRESETS = {
@@ -137,17 +158,48 @@
         { color: 'rgba(0,60,55,0.60)',     baseX: 0.20, baseY: 0.65, radius: 0.62, orbitX: 0.06, orbitY: 0.10, phase: 4.8, speed: 0.25 }
       ],
       grain: 0.16, blur: 40
+    },
+    // ── NEW presets ────────────────────────────────────────────────────────────
+    galaxy: {
+      background: '#02010a',
+      blobs: [
+        { color: 'rgba(100,0,200,0.75)',  baseX: 0.30, baseY: 0.45, radius: 0.60, orbitX: 0.12, orbitY: 0.08, phase: 0,   speed: 0.40 },
+        { color: 'rgba(0,80,180,0.70)',   baseX: 0.70, baseY: 0.30, radius: 0.55, orbitX: 0.08, orbitY: 0.11, phase: 2.3, speed: 0.30 },
+        { color: 'rgba(180,50,255,0.50)', baseX: 0.50, baseY: 0.70, radius: 0.65, orbitX: 0.10, orbitY: 0.07, phase: 4.7, speed: 0.25 }
+      ],
+      grain: 0.10, blur: 78
+    },
+    candy: {
+      background: '#0a0008',
+      blobs: [
+        { color: 'rgba(255,80,180,0.85)', baseX: 0.25, baseY: 0.40, radius: 0.55, orbitX: 0.11, orbitY: 0.09, phase: 0,   speed: 0.65 },
+        { color: 'rgba(255,200,50,0.70)', baseX: 0.70, baseY: 0.55, radius: 0.50, orbitX: 0.09, orbitY: 0.10, phase: 1.9, speed: 0.55 },
+        { color: 'rgba(80,200,255,0.60)', baseX: 0.50, baseY: 0.20, radius: 0.48, orbitX: 0.13, orbitY: 0.06, phase: 3.8, speed: 0.70 }
+      ],
+      grain: 0.03, blur: 50
+    },
+    arctic: {
+      background: '#010a10',
+      blobs: [
+        { color: 'rgba(140,220,255,0.75)', baseX: 0.35, baseY: 0.35, radius: 0.58, orbitX: 0.09, orbitY: 0.07, phase: 0,   speed: 0.35 },
+        { color: 'rgba(60,160,220,0.65)',  baseX: 0.65, baseY: 0.65, radius: 0.60, orbitX: 0.07, orbitY: 0.10, phase: 2.6, speed: 0.28 },
+        { color: 'rgba(200,240,255,0.40)', baseX: 0.50, baseY: 0.20, radius: 0.45, orbitX: 0.11, orbitY: 0.05, phase: 5.0, speed: 0.42 }
+      ],
+      grain: 0.12, blur: 60
     }
   };
 
   const DEFAULTS = {
-    preset: 'aurora',
-    mode: 'gradient',
-    speed: 1,
+    preset:      'aurora',
+    mode:        'gradient',
+    speed:       1,
     interactive: false,
-    grain: null,
-    blur: null,
-    colors: null
+    grain:       null,
+    blur:        null,
+    colors:      null,
+    opacity:     1,        // canvas overall opacity (0–1)
+    background:  null,     // override preset background color (CSS color string)
+    onFrame:     null      // callback(t, instance) called each rendered frame
   };
 
   // Replaced/void elements that can't have child nodes
@@ -197,7 +249,8 @@
       speed:       get('--wb-background-speed',       '--js-background-speed', '--grad-speed'),
       interactive: get('--wb-background-interactive', '--js-background-interactive', '--grad-interactive'),
       grain:       get('--wb-background-grain',       '--js-background-grain', '--grad-grain'),
-      blur:        get('--wb-background-blur',        '--js-background-blur', '--grad-blur')
+      blur:        get('--wb-background-blur',        '--js-background-blur', '--grad-blur'),
+      opacity:     get('--wb-background-opacity')
     };
   }
 
@@ -209,12 +262,12 @@
       speed:       d.wbBackgroundSpeed || d.jsBackgroundSpeed || d.gradSpeed         || d.wonderBgSpeed       || undefined,
       interactive: d.wbInteractive     || d.jsInteractive     || d.gradInteractive   || d.wonderBgInteractive || undefined,
       grain:       d.wbGrain           || d.jsGrain           || d.gradGrain         || d.wonderBgGrain       || undefined,
-      blur:        d.wbBlur            || d.jsBlur            || d.gradBlur          || d.wonderBgBlur        || undefined
+      blur:        d.wbBlur            || d.jsBlur            || d.gradBlur          || d.wonderBgBlur        || undefined,
+      opacity:     d.wbOpacity                                                                                 || undefined
     };
   }
 
   // pick() returns the first defined value from JS config → data-attrs → CSS vars.
-  // Returns undefined if none found — callers supply their own fallback.
   function makePick(jsConfig, data, css) {
     return function pick(key) {
       if (jsConfig && jsConfig[key] !== undefined) return jsConfig[key];
@@ -230,11 +283,11 @@
     const presetClass = detectPresetClass(el);
     const pick = makePick(jsConfig, data, css);
 
-    // Priority: JS > data-* > CSS vars > class preset > defaults
     const preset = pick('preset') || presetClass || DEFAULTS.preset;
     const mode   = pick('mode')   || DEFAULTS.mode;
     const speed  = parseNum(pick('speed'), DEFAULTS.speed);
     const interactive = parseBool(pick('interactive'), DEFAULTS.interactive);
+    const opacity = parseNum(pick('opacity'), DEFAULTS.opacity);
 
     let grain = pick('grain');
     grain = (grain === undefined || grain === null) ? null : parseNum(grain, null);
@@ -242,9 +295,11 @@
     let blur = pick('blur');
     blur = (blur === undefined || blur === null) ? null : parseNum(blur, null);
 
-    const colors = (jsConfig && jsConfig.colors) ? jsConfig.colors : null;
+    const colors     = (jsConfig && jsConfig.colors)     ? jsConfig.colors     : null;
+    const background = (jsConfig && jsConfig.background) ? jsConfig.background : null;
+    const onFrame    = (jsConfig && typeof jsConfig.onFrame === 'function') ? jsConfig.onFrame : null;
 
-    return { preset, mode, speed, interactive, grain, blur, colors };
+    return { preset, mode, speed, interactive, grain, blur, colors, opacity, background, onFrame };
   }
 
   // ── Instance ─────────────────────────────────────────────────────────────────
@@ -259,11 +314,15 @@
       this._paused = false;
       this._reducedMotion = prefersReducedMotion;
       this._noiseCanvas = null;
+      this._noiseCtx = null;
       this._wrapper = null;
       this._container = null;
-      this._savedOverflow = null;    // restored on destroy
-      this._savedPosition = null;   // restored on destroy
-      this._modifiedChildren = [];  // track which children we touched
+      this._savedOverflow = null;
+      this._savedPosition = null;
+      this._savedVoidStyles = null;  // FIX: save void element original styles
+      this._modifiedChildren = [];
+      // Preset transition state
+      this._trans = null;  // { fromColors, toColors, startTime, duration }
       this._buildDom();
       this._bindEvents();
       this._resize();
@@ -276,11 +335,16 @@
       let container;
 
       if (VOID_ELEMENTS.has(tag)) {
-        // Wrap void element so we can insert a canvas sibling
+        // FIX: save original styles before modifying
+        this._savedVoidStyles = {
+          display: origEl.style.display,
+          width:   origEl.style.width,
+          height:  origEl.style.height
+        };
+
         const wrapper = document.createElement('div');
         wrapper.setAttribute('data-wonder-bg-wrapper', '');
 
-        // Copy border-radius from the original element if present
         const cs = getComputedStyle(origEl);
         const br = cs.borderRadius;
         let wrapperCss = 'position:relative;overflow:hidden;line-height:0;';
@@ -302,22 +366,17 @@
         this._wrapper  = wrapper;
         container = wrapper;
       } else {
-        // Non-void element: set position:relative only if needed
         const cs = getComputedStyle(origEl);
         if (cs.position === 'static') {
           this._savedPosition = origEl.style.position || '';
           origEl.style.position = 'relative';
         }
 
-        // Ensure overflow:hidden so the canvas is clipped to border-radius
         this._savedOverflow = origEl.style.overflow || '';
         if (cs.overflow === 'visible' || cs.overflow === '') {
           origEl.style.overflow = 'hidden';
         }
 
-        // Only lift children above the canvas (z-index:0) if they don't
-        // already have a stacking context. We do NOT touch position — only
-        // z-index, and only when the child has none set at all.
         Array.from(origEl.children).forEach((child) => {
           if (child.hasAttribute('data-wonder-bg-canvas')) return;
           const childCs = getComputedStyle(child);
@@ -333,7 +392,6 @@
 
       this._container = container;
 
-      // Create the canvas overlay
       const canvas = document.createElement('canvas');
       canvas.setAttribute('data-wonder-bg-canvas', '');
       canvas.style.cssText = [
@@ -341,19 +399,27 @@
         'display:block;pointer-events:none;border-radius:inherit;'
       ].join('');
 
-      const mode = this.config.mode;
-      if (mode === 'grain' || mode === 'tint') {
-        canvas.style.mixBlendMode = 'soft-light';
-        canvas.style.zIndex = '2';
-      } else {
-        canvas.style.zIndex = '0';
-      }
+      this._applyCanvasMode(canvas, this.config.mode);
+      this._applyCanvasOpacity(canvas, this.config.opacity);
 
-      // Insert canvas as first child so it renders behind content
       container.insertBefore(canvas, container.firstChild);
 
       this.canvas = canvas;
       this.ctx    = canvas.getContext('2d');
+    }
+
+    _applyCanvasMode(canvas, mode) {
+      if (mode === 'grain' || mode === 'tint') {
+        canvas.style.mixBlendMode = 'soft-light';
+        canvas.style.zIndex = '2';
+      } else {
+        canvas.style.mixBlendMode = 'normal';
+        canvas.style.zIndex = '0';
+      }
+    }
+
+    _applyCanvasOpacity(canvas, opacity) {
+      canvas.style.opacity = (opacity === null || opacity === undefined) ? '1' : String(opacity);
     }
 
     _bindEvents() {
@@ -364,15 +430,7 @@
       window.addEventListener('resize', this._onResize);
 
       if (this.config.interactive) {
-        this._onMove = (e) => {
-          const rect = target.getBoundingClientRect();
-          const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-          const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-          this.pointer.targetX = Math.min(1, Math.max(0, cx / rect.width));
-          this.pointer.targetY = Math.min(1, Math.max(0, cy / rect.height));
-        };
-        target.addEventListener('mousemove', this._onMove);
-        target.addEventListener('touchmove', this._onMove, { passive: true });
+        this._bindPointer(target);
       }
 
       if (typeof ResizeObserver !== 'undefined') {
@@ -407,6 +465,26 @@
       }
     }
 
+    _bindPointer(target) {
+      this._onMove = (e) => {
+        const rect = target.getBoundingClientRect();
+        const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+        this.pointer.targetX = Math.min(1, Math.max(0, cx / rect.width));
+        this.pointer.targetY = Math.min(1, Math.max(0, cy / rect.height));
+      };
+      target.addEventListener('mousemove', this._onMove);
+      target.addEventListener('touchmove', this._onMove, { passive: true });
+    }
+
+    _unbindPointer() {
+      if (this._onMove && this._evTarget) {
+        this._evTarget.removeEventListener('mousemove', this._onMove);
+        this._evTarget.removeEventListener('touchmove', this._onMove);
+        this._onMove = null;
+      }
+    }
+
     _resize() {
       const target = this._container;
       const rect = target.getBoundingClientRect();
@@ -429,8 +507,10 @@
         const t = ((now - this._startTime) / 1000) * this.config.speed;
         this.pointer.x += (this.pointer.targetX - this.pointer.x) * 0.04;
         this.pointer.y += (this.pointer.targetY - this.pointer.y) * 0.04;
-        this._render(t);
+        this._render(t, now);
+        if (this.config.onFrame) this.config.onFrame(t, this);
         this._raf = null;
+        // FIX: reduced-motion now renders one static frame then stops (not blank)
         if (!this._paused && !this._reducedMotion) {
           this._raf = requestAnimationFrame(loop);
         }
@@ -438,20 +518,73 @@
       this._raf = requestAnimationFrame(loop);
     }
 
-    _render(t) {
+    // ── Animated grain ──────────────────────────────────────────────────────────
+    // FIX: Noise is regenerated every frame for real film-grain flicker.
+    // On mobile, regeneration happens every other frame to save CPU.
+    _refreshNoise() {
+      const size = 128;
+      if (!this._noiseCanvas) {
+        this._noiseCanvas = document.createElement('canvas');
+        this._noiseCanvas.width = size;
+        this._noiseCanvas.height = size;
+        this._noiseCtx = this._noiseCanvas.getContext('2d');
+        this._noiseFrame = 0;
+      }
+      // Mobile: skip every other frame for perf
+      this._noiseFrame = (this._noiseFrame + 1) | 0;
+      if (isMobile && (this._noiseFrame & 1)) return;
+
+      const imgData = this._noiseCtx.createImageData(size, size);
+      const data = imgData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const v = (Math.random() * 255) | 0;
+        data[i] = v; data[i + 1] = v; data[i + 2] = v; data[i + 3] = 255;
+      }
+      this._noiseCtx.putImageData(imgData, 0, 0);
+    }
+
+    // ── Resolve effective blob colors (with transition lerp) ─────────────────────
+    _getBlobColors(preset, now) {
+      if (!this._trans) {
+        return preset.blobs.map((b, i) =>
+          (this.config.colors && this.config.colors[i]) || b.color
+        );
+      }
+      // Lerp transition
+      const elapsed = (now - this._trans.startTime) / 1000;
+      const progress = Math.min(1, elapsed / this._trans.duration);
+      // ease-in-out
+      const t = progress < 0.5
+        ? 2 * progress * progress
+        : -1 + (4 - 2 * progress) * progress;
+
+      const colors = preset.blobs.map((b, i) => {
+        const from = this._trans.fromColors[i] || b.color;
+        const to   = (this.config.colors && this.config.colors[i]) || b.color;
+        return lerpRgba(from, to, t);
+      });
+      if (progress >= 1) this._trans = null;
+      return colors;
+    }
+
+    _render(t, now) {
       const ctx    = this.ctx;
       const preset = PRESETS[this.config.preset] || PRESETS.aurora;
       const w = this.width, h = this.height;
-      const mode  = this.config.mode;
+      const mode    = this.config.mode;
       const rawBlur = this.config.blur !== null ? this.config.blur : preset.blur;
       const blur    = Math.min(rawBlur, MAX_BLUR);
       const grain   = this.config.grain !== null ? this.config.grain : preset.grain;
+      const nowMs   = now || performance.now();
 
       ctx.clearRect(0, 0, w, h);
 
-      // ── Grain-only mode ─────────────────────────────────────────────────────
+      // ── Grain-only mode ──────────────────────────────────────────────────────
       if (mode === 'grain') {
-        if (grain > 0) this._renderGrainOverlay(grain);
+        if (grain > 0) {
+          this._refreshNoise();
+          this._renderGrainOverlay(grain);
+        }
         return;
       }
 
@@ -464,8 +597,9 @@
         const diag = Math.sqrt(w * w + h * h);
         const px = this.config.interactive ? (this.pointer.x - 0.5) * 0.30 : 0;
         const py = this.config.interactive ? (this.pointer.y - 0.5) * 0.30 : 0;
+        const blobColors = this._getBlobColors(preset, nowMs);
         preset.blobs.forEach((b, i) => {
-          const color = (this.config.colors && this.config.colors[i]) || b.color;
+          const color = blobColors[i];
           const ang = t * b.speed + b.phase;
           const x = (b.baseX + Math.cos(ang) * b.orbitX + px) * w;
           const y = (b.baseY + Math.sin(ang * 1.3) * b.orbitY + py) * h;
@@ -477,20 +611,25 @@
           ctx.fillRect(0, 0, w, h);
         });
         ctx.restore();
-        if (grain > 0) this._renderGrainOverlay(grain * 0.6);
+        if (grain > 0) {
+          this._refreshNoise();
+          this._renderGrainOverlay(grain * 0.6);
+        }
         return;
       }
 
       // ── Gradient mode (default) ───────────────────────────────────────────────
-      ctx.fillStyle = preset.background;
+      // FIX: support background override
+      ctx.fillStyle = this.config.background || preset.background;
       ctx.fillRect(0, 0, w, h);
       ctx.save();
       ctx.filter = `blur(${blur}px)`;
       const diag = Math.sqrt(w * w + h * h);
       const px = this.config.interactive ? (this.pointer.x - 0.5) * 0.30 : 0;
       const py = this.config.interactive ? (this.pointer.y - 0.5) * 0.30 : 0;
+      const blobColors = this._getBlobColors(preset, nowMs);
       preset.blobs.forEach((b, i) => {
-        const color = (this.config.colors && this.config.colors[i]) || b.color;
+        const color = blobColors[i];
         const ang = t * b.speed + b.phase;
         const x = (b.baseX + Math.cos(ang) * b.orbitX + px) * w;
         const y = (b.baseY + Math.sin(ang * 1.3) * b.orbitY + py) * h;
@@ -502,13 +641,15 @@
         ctx.fillRect(0, 0, w, h);
       });
       ctx.restore();
-      if (grain > 0) this._applyGrain(grain);
+      if (grain > 0) {
+        this._refreshNoise();
+        this._applyGrain(grain);
+      }
     }
 
     _applyGrain(amount) {
       const ctx = this.ctx;
       const w = this.width, h = this.height;
-      if (!this._noiseCanvas) this._buildNoiseCanvas();
       ctx.save();
       ctx.globalAlpha = Math.min(1, amount);
       ctx.globalCompositeOperation = 'overlay';
@@ -520,7 +661,6 @@
     _renderGrainOverlay(amount) {
       const ctx = this.ctx;
       const w = this.width, h = this.height;
-      if (!this._noiseCanvas) this._buildNoiseCanvas();
       ctx.fillStyle = 'rgb(128,128,128)';
       ctx.fillRect(0, 0, w, h);
       ctx.save();
@@ -531,51 +671,63 @@
       ctx.restore();
     }
 
-    _buildNoiseCanvas() {
-      const size = 200;
-      const nc = document.createElement('canvas');
-      nc.width = size; nc.height = size;
-      const nctx = nc.getContext('2d');
-      const imgData = nctx.createImageData(size, size);
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        const v = Math.random() * 255;
-        imgData.data[i] = v; imgData.data[i+1] = v;
-        imgData.data[i+2] = v; imgData.data[i+3] = 255;
+    // ── Public methods ────────────────────────────────────────────────────────
+
+    /** Pause the animation loop. Frame stays visible. */
+    pause() {
+      this._paused = true;
+    }
+
+    /** Resume the animation loop after pause(). */
+    resume() {
+      if (!this._paused) return;
+      this._paused = false;
+      if (!this._raf && !this._destroyed && !this._reducedMotion) {
+        this._resumeRaf();
       }
-      nctx.putImageData(imgData, 0, 0);
-      this._noiseCanvas = nc;
+    }
+
+    /** Returns true if currently paused. */
+    isPaused() {
+      return this._paused;
     }
 
     update(newConfig) {
+      // Handle preset transition — capture current colors before switching
+      if (newConfig && newConfig.preset && newConfig.preset !== this.config.preset) {
+        const currentPreset = PRESETS[this.config.preset] || PRESETS.aurora;
+        const fromColors = currentPreset.blobs.map((b, i) =>
+          (this.config.colors && this.config.colors[i]) || b.color
+        );
+        const duration = (newConfig.transitionDuration !== undefined)
+          ? newConfig.transitionDuration
+          : 0.6;
+        if (duration > 0) {
+          this._trans = {
+            fromColors,
+            startTime: performance.now(),
+            duration
+          };
+        }
+      }
+
       this.jsConfig = Object.assign({}, this.jsConfig, newConfig);
       this.config = resolveConfig(this.el, this.jsConfig);
 
-      const mode = this.config.mode;
-      if (mode === 'grain' || mode === 'tint') {
-        this.canvas.style.mixBlendMode = 'soft-light';
-        this.canvas.style.zIndex = '2';
-      } else {
-        this.canvas.style.mixBlendMode = '';
-        this.canvas.style.zIndex = '0';
-      }
+      // FIX: use helper to correctly set mix-blend-mode ('' doesn't work in all browsers)
+      this._applyCanvasMode(this.canvas, this.config.mode);
+      // Apply opacity changes
+      this._applyCanvasOpacity(this.canvas, this.config.opacity);
 
+      // FIX: handle interactive toggle cleanly
       if (newConfig && newConfig.interactive !== undefined) {
-        const target = this._evTarget;
-        if (this._onMove) {
-          target.removeEventListener('mousemove', this._onMove);
-          target.removeEventListener('touchmove', this._onMove);
-          this._onMove = null;
-        }
+        this._unbindPointer();
         if (this.config.interactive) {
-          this._onMove = (e) => {
-            const rect = target.getBoundingClientRect();
-            const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-            const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-            this.pointer.targetX = Math.min(1, Math.max(0, cx / rect.width));
-            this.pointer.targetY = Math.min(1, Math.max(0, cy / rect.height));
-          };
-          target.addEventListener('mousemove', this._onMove);
-          target.addEventListener('touchmove', this._onMove, { passive: true });
+          this._bindPointer(this._evTarget);
+        } else {
+          // FIX: reset pointer to center when interactive is turned off
+          this.pointer.targetX = 0.5;
+          this.pointer.targetY = 0.5;
         }
       }
 
@@ -592,20 +744,15 @@
       if (this._ro)  this._ro.disconnect();
       if (this._io)  this._io.disconnect();
       if (this._mo)  this._mo.disconnect();
-      const target = this._evTarget;
-      if (this._onMove && target) {
-        target.removeEventListener('mousemove', this._onMove);
-        target.removeEventListener('touchmove', this._onMove);
-      }
+      this._unbindPointer();
+
       if (this.canvas && this.canvas.parentNode) this.canvas.parentNode.removeChild(this.canvas);
 
-      // Restore modified children z-indexes
       this._modifiedChildren.forEach((child) => {
         child.style.zIndex = '';
       });
       this._modifiedChildren = [];
 
-      // Restore container styles we added
       if (!this._wrapper) {
         if (this._savedPosition !== null) {
           this.el.style.position = this._savedPosition;
@@ -615,7 +762,13 @@
         }
       }
 
+      // FIX: restore void element original styles
       if (this._wrapper && this._wrapper.parentNode) {
+        if (this._savedVoidStyles) {
+          this.el.style.display = this._savedVoidStyles.display;
+          this.el.style.width   = this._savedVoidStyles.width;
+          this.el.style.height  = this._savedVoidStyles.height;
+        }
         this._wrapper.parentNode.insertBefore(this.el, this._wrapper);
         this._wrapper.parentNode.removeChild(this._wrapper);
         this._wrapper = null;
@@ -628,7 +781,7 @@
 
   // ── Public API ───────────────────────────────────────────────────────────────
   const WonderBG = {
-    version: '1.4.0',
+    version: '1.5.0',
     presets: PRESETS,
     _instances: [],
 
@@ -648,15 +801,15 @@
       return instances.length === 1 ? instances[0] : instances;
     },
 
+    // FIX: removed [data-wb-background-mode] alone (without preset) from selector
+    // to prevent unintended auto-init on elements that only specify a mode
     autoInit() {
       const presetClassSel = PRESET_NAMES.map((n) => '.wb-' + n).join(',');
       const sel = [
         '[data-wb-background]',
-        '[data-wb-background-mode]',
         '[data-grad-preset]',
         '[data-gradframe]',
         '[data-js-background]',
-        '[data-js-background-mode]',
         '[data-wonder-bg-preset]',
         '.grad-bg',
         presetClassSel
@@ -674,6 +827,21 @@
     registerPreset(name, definition) {
       PRESETS[name] = definition;
       PRESET_NAMES.push(name);
+    },
+
+    /** Return a copy of all active instances. */
+    getAll() {
+      return this._instances.slice();
+    },
+
+    /** Pause all active instances. */
+    pauseAll() {
+      this._instances.forEach((inst) => inst.pause());
+    },
+
+    /** Resume all active instances. */
+    resumeAll() {
+      this._instances.forEach((inst) => inst.resume());
     }
   };
 
