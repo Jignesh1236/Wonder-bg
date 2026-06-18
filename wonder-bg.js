@@ -72,17 +72,17 @@
     aurora: {
       background: '#0d1117',
       blobs: [
-        { color: 'rgba(32,178,170,0.85)',  baseX: 0.20, baseY: 0.35, radius: 0.55, orbitX: 0.10, orbitY: 0.08, phase: 0,   speed: 0.60 },
-        { color: 'rgba(0,128,128,0.70)',   baseX: 0.65, baseY: 0.25, radius: 0.50, orbitX: 0.08, orbitY: 0.10, phase: 2.1, speed: 0.45 },
-        { color: 'rgba(22,33,62,0.90)',    baseX: 0.50, baseY: 0.75, radius: 0.65, orbitX: 0.12, orbitY: 0.06, phase: 4.2, speed: 0.35 }
+        { color: 'rgba(32,178,170,0.85)', baseX: 0.20, baseY: 0.35, radius: 0.55, orbitX: 0.10, orbitY: 0.08, phase: 0, speed: 0.60 },
+        { color: 'rgba(0,128,128,0.70)', baseX: 0.65, baseY: 0.25, radius: 0.50, orbitX: 0.08, orbitY: 0.10, phase: 2.1, speed: 0.45 },
+        { color: 'rgba(22,33,62,0.90)', baseX: 0.50, baseY: 0.75, radius: 0.65, orbitX: 0.12, orbitY: 0.06, phase: 4.2, speed: 0.35 }
       ],
       grain: 0.06, blur: 65
     },
     sunset: {
       background: '#05030a',
       blobs: [
-        { color: 'rgba(220,60,30,0.90)',  baseX: 0.28, baseY: 0.55, radius: 0.58, orbitX: 0.12, orbitY: 0.07, phase: 0,   speed: 0.55 },
-        { color: 'rgba(80,20,160,0.85)',  baseX: 0.75, baseY: 0.30, radius: 0.62, orbitX: 0.09, orbitY: 0.09, phase: 1.8, speed: 0.45 },
+        { color: 'rgba(220,60,30,0.90)', baseX: 0.28, baseY: 0.55, radius: 0.58, orbitX: 0.12, orbitY: 0.07, phase: 0, speed: 0.55 },
+        { color: 'rgba(80,20,160,0.85)', baseX: 0.75, baseY: 0.30, radius: 0.62, orbitX: 0.09, orbitY: 0.09, phase: 1.8, speed: 0.45 },
         { color: 'rgba(240,100,20,0.55)', baseX: 0.10, baseY: 0.70, radius: 0.45, orbitX: 0.10, orbitY: 0.06, phase: 3.4, speed: 0.60 }
       ],
       grain: 0.06, blur: 70
@@ -90,8 +90,8 @@
     ocean: {
       background: '#021014',
       blobs: [
-        { color: 'rgba(20,130,160,0.85)', baseX: 0.25, baseY: 0.40, radius: 0.55, orbitX: 0.10, orbitY: 0.08, phase: 0,   speed: 0.50 },
-        { color: 'rgba(10,60,110,0.85)',  baseX: 0.75, baseY: 0.60, radius: 0.60, orbitX: 0.08, orbitY: 0.10, phase: 2.5, speed: 0.40 },
+        { color: 'rgba(20,130,160,0.85)', baseX: 0.25, baseY: 0.40, radius: 0.55, orbitX: 0.10, orbitY: 0.08, phase: 0, speed: 0.50 },
+        { color: 'rgba(10,60,110,0.85)', baseX: 0.75, baseY: 0.60, radius: 0.60, orbitX: 0.08, orbitY: 0.10, phase: 2.5, speed: 0.40 },
         { color: 'rgba(60,200,190,0.45)', baseX: 0.55, baseY: 0.25, radius: 0.42, orbitX: 0.12, orbitY: 0.05, phase: 4.0, speed: 0.65 }
       ],
       grain: 0.05, blur: 65
@@ -99,8 +99,8 @@
     forest: {
       background: '#040d06',
       blobs: [
-        { color: 'rgba(60,180,60,0.75)',  baseX: 0.70, baseY: 0.25, radius: 0.55, orbitX: 0.11, orbitY: 0.08, phase: 0,   speed: 0.50 },
-        { color: 'rgba(20,90,20,0.80)',   baseX: 0.25, baseY: 0.65, radius: 0.60, orbitX: 0.08, orbitY: 0.10, phase: 2.3, speed: 0.40 },
+        { color: 'rgba(60,180,60,0.75)', baseX: 0.70, baseY: 0.25, radius: 0.55, orbitX: 0.11, orbitY: 0.08, phase: 0, speed: 0.50 },
+        { color: 'rgba(20,90,20,0.80)', baseX: 0.25, baseY: 0.65, radius: 0.60, orbitX: 0.08, orbitY: 0.10, phase: 2.3, speed: 0.40 },
         { color: 'rgba(100,220,80,0.40)', baseX: 0.55, baseY: 0.40, radius: 0.45, orbitX: 0.13, orbitY: 0.06, phase: 4.1, speed: 0.60 }
       ],
       grain: 0.07, blur: 68
@@ -108,25 +108,25 @@
     neon: {
       background: '#070010',
       blobs: [
-        { color: 'rgba(180,0,255,0.80)',  baseX: 0.20, baseY: 0.40, radius: 0.52, orbitX: 0.10, orbitY: 0.08, phase: 0,   speed: 0.65 },
-        { color: 'rgba(0,220,255,0.70)',  baseX: 0.75, baseY: 0.55, radius: 0.55, orbitX: 0.08, orbitY: 0.09, phase: 2.0, speed: 0.50 },
-        { color: 'rgba(255,0,150,0.55)',  baseX: 0.50, baseY: 0.20, radius: 0.48, orbitX: 0.12, orbitY: 0.07, phase: 4.0, speed: 0.70 }
+        { color: 'rgba(180,0,255,0.80)', baseX: 0.20, baseY: 0.40, radius: 0.52, orbitX: 0.10, orbitY: 0.08, phase: 0, speed: 0.65 },
+        { color: 'rgba(0,220,255,0.70)', baseX: 0.75, baseY: 0.55, radius: 0.55, orbitX: 0.08, orbitY: 0.09, phase: 2.0, speed: 0.50 },
+        { color: 'rgba(255,0,150,0.55)', baseX: 0.50, baseY: 0.20, radius: 0.48, orbitX: 0.12, orbitY: 0.07, phase: 4.0, speed: 0.70 }
       ],
       grain: 0.04, blur: 55
     },
     ember: {
       background: '#090200',
       blobs: [
-        { color: 'rgba(255,80,10,0.85)',  baseX: 0.35, baseY: 0.60, radius: 0.55, orbitX: 0.09, orbitY: 0.07, phase: 0,   speed: 0.55 },
-        { color: 'rgba(200,180,0,0.65)',  baseX: 0.65, baseY: 0.35, radius: 0.50, orbitX: 0.11, orbitY: 0.09, phase: 2.2, speed: 0.45 },
-        { color: 'rgba(255,40,0,0.50)',   baseX: 0.15, baseY: 0.40, radius: 0.45, orbitX: 0.10, orbitY: 0.06, phase: 3.8, speed: 0.65 }
+        { color: 'rgba(255,80,10,0.85)', baseX: 0.35, baseY: 0.60, radius: 0.55, orbitX: 0.09, orbitY: 0.07, phase: 0, speed: 0.55 },
+        { color: 'rgba(200,180,0,0.65)', baseX: 0.65, baseY: 0.35, radius: 0.50, orbitX: 0.11, orbitY: 0.09, phase: 2.2, speed: 0.45 },
+        { color: 'rgba(255,40,0,0.50)', baseX: 0.15, baseY: 0.40, radius: 0.45, orbitX: 0.10, orbitY: 0.06, phase: 3.8, speed: 0.65 }
       ],
       grain: 0.07, blur: 65
     },
     mono: {
       background: '#080808',
       blobs: [
-        { color: 'rgba(255,255,255,0.16)', baseX: 0.30, baseY: 0.40, radius: 0.55, orbitX: 0.10, orbitY: 0.08, phase: 0,   speed: 0.50 },
+        { color: 'rgba(255,255,255,0.16)', baseX: 0.30, baseY: 0.40, radius: 0.55, orbitX: 0.10, orbitY: 0.08, phase: 0, speed: 0.50 },
         { color: 'rgba(255,255,255,0.08)', baseX: 0.72, baseY: 0.62, radius: 0.60, orbitX: 0.08, orbitY: 0.10, phase: 2.5, speed: 0.40 },
         { color: 'rgba(255,255,255,0.06)', baseX: 0.55, baseY: 0.25, radius: 0.42, orbitX: 0.12, orbitY: 0.05, phase: 4.0, speed: 0.30 }
       ],
@@ -135,27 +135,27 @@
     void: {
       background: '#030303',
       blobs: [
-        { color: 'rgba(50,0,80,0.70)',    baseX: 0.30, baseY: 0.50, radius: 0.60, orbitX: 0.08, orbitY: 0.07, phase: 0,   speed: 0.35 },
-        { color: 'rgba(0,30,60,0.60)',    baseX: 0.70, baseY: 0.40, radius: 0.58, orbitX: 0.06, orbitY: 0.09, phase: 3.1, speed: 0.30 },
-        { color: 'rgba(80,0,40,0.45)',    baseX: 0.50, baseY: 0.70, radius: 0.52, orbitX: 0.10, orbitY: 0.06, phase: 5.2, speed: 0.25 }
+        { color: 'rgba(50,0,80,0.70)', baseX: 0.30, baseY: 0.50, radius: 0.60, orbitX: 0.08, orbitY: 0.07, phase: 0, speed: 0.35 },
+        { color: 'rgba(0,30,60,0.60)', baseX: 0.70, baseY: 0.40, radius: 0.58, orbitX: 0.06, orbitY: 0.09, phase: 3.1, speed: 0.30 },
+        { color: 'rgba(80,0,40,0.45)', baseX: 0.50, baseY: 0.70, radius: 0.52, orbitX: 0.10, orbitY: 0.06, phase: 5.2, speed: 0.25 }
       ],
       grain: 0.09, blur: 75
     },
     meadow: {
       background: '#030a02',
       blobs: [
-        { color: 'rgba(100,220,50,0.80)',  baseX: 0.85, baseY: 0.10, radius: 0.65, orbitX: 0.08, orbitY: 0.12, phase: 0,   speed: 0.45 },
-        { color: 'rgba(60,160,30,0.70)',   baseX: 0.10, baseY: 0.20, radius: 0.55, orbitX: 0.10, orbitY: 0.08, phase: 2.0, speed: 0.35 },
-        { color: 'rgba(30,80,10,0.60)',    baseX: 0.50, baseY: 0.75, radius: 0.60, orbitX: 0.12, orbitY: 0.06, phase: 4.5, speed: 0.30 }
+        { color: 'rgba(100,220,50,0.80)', baseX: 0.85, baseY: 0.10, radius: 0.65, orbitX: 0.08, orbitY: 0.12, phase: 0, speed: 0.45 },
+        { color: 'rgba(60,160,30,0.70)', baseX: 0.10, baseY: 0.20, radius: 0.55, orbitX: 0.10, orbitY: 0.08, phase: 2.0, speed: 0.35 },
+        { color: 'rgba(30,80,10,0.60)', baseX: 0.50, baseY: 0.75, radius: 0.60, orbitX: 0.12, orbitY: 0.06, phase: 4.5, speed: 0.30 }
       ],
       grain: 0.18, blur: 45
     },
     chalkboard: {
       background: '#010908',
       blobs: [
-        { color: 'rgba(0,200,180,0.90)',   baseX: 0.72, baseY: 0.22, radius: 0.52, orbitX: 0.07, orbitY: 0.09, phase: 0,   speed: 0.40 },
-        { color: 'rgba(0,140,130,0.75)',   baseX: 0.40, baseY: 0.30, radius: 0.48, orbitX: 0.09, orbitY: 0.07, phase: 2.4, speed: 0.30 },
-        { color: 'rgba(0,60,55,0.60)',     baseX: 0.20, baseY: 0.65, radius: 0.62, orbitX: 0.06, orbitY: 0.10, phase: 4.8, speed: 0.25 }
+        { color: 'rgba(0,200,180,0.90)', baseX: 0.72, baseY: 0.22, radius: 0.52, orbitX: 0.07, orbitY: 0.09, phase: 0, speed: 0.40 },
+        { color: 'rgba(0,140,130,0.75)', baseX: 0.40, baseY: 0.30, radius: 0.48, orbitX: 0.09, orbitY: 0.07, phase: 2.4, speed: 0.30 },
+        { color: 'rgba(0,60,55,0.60)', baseX: 0.20, baseY: 0.65, radius: 0.62, orbitX: 0.06, orbitY: 0.10, phase: 4.8, speed: 0.25 }
       ],
       grain: 0.16, blur: 40
     },
@@ -163,8 +163,8 @@
     galaxy: {
       background: '#02010a',
       blobs: [
-        { color: 'rgba(100,0,200,0.75)',  baseX: 0.30, baseY: 0.45, radius: 0.60, orbitX: 0.12, orbitY: 0.08, phase: 0,   speed: 0.40 },
-        { color: 'rgba(0,80,180,0.70)',   baseX: 0.70, baseY: 0.30, radius: 0.55, orbitX: 0.08, orbitY: 0.11, phase: 2.3, speed: 0.30 },
+        { color: 'rgba(100,0,200,0.75)', baseX: 0.30, baseY: 0.45, radius: 0.60, orbitX: 0.12, orbitY: 0.08, phase: 0, speed: 0.40 },
+        { color: 'rgba(0,80,180,0.70)', baseX: 0.70, baseY: 0.30, radius: 0.55, orbitX: 0.08, orbitY: 0.11, phase: 2.3, speed: 0.30 },
         { color: 'rgba(180,50,255,0.50)', baseX: 0.50, baseY: 0.70, radius: 0.65, orbitX: 0.10, orbitY: 0.07, phase: 4.7, speed: 0.25 }
       ],
       grain: 0.10, blur: 78
@@ -172,7 +172,7 @@
     candy: {
       background: '#0a0008',
       blobs: [
-        { color: 'rgba(255,80,180,0.85)', baseX: 0.25, baseY: 0.40, radius: 0.55, orbitX: 0.11, orbitY: 0.09, phase: 0,   speed: 0.65 },
+        { color: 'rgba(255,80,180,0.85)', baseX: 0.25, baseY: 0.40, radius: 0.55, orbitX: 0.11, orbitY: 0.09, phase: 0, speed: 0.65 },
         { color: 'rgba(255,200,50,0.70)', baseX: 0.70, baseY: 0.55, radius: 0.50, orbitX: 0.09, orbitY: 0.10, phase: 1.9, speed: 0.55 },
         { color: 'rgba(80,200,255,0.60)', baseX: 0.50, baseY: 0.20, radius: 0.48, orbitX: 0.13, orbitY: 0.06, phase: 3.8, speed: 0.70 }
       ],
@@ -181,8 +181,8 @@
     arctic: {
       background: '#010a10',
       blobs: [
-        { color: 'rgba(140,220,255,0.75)', baseX: 0.35, baseY: 0.35, radius: 0.58, orbitX: 0.09, orbitY: 0.07, phase: 0,   speed: 0.35 },
-        { color: 'rgba(60,160,220,0.65)',  baseX: 0.65, baseY: 0.65, radius: 0.60, orbitX: 0.07, orbitY: 0.10, phase: 2.6, speed: 0.28 },
+        { color: 'rgba(140,220,255,0.75)', baseX: 0.35, baseY: 0.35, radius: 0.58, orbitX: 0.09, orbitY: 0.07, phase: 0, speed: 0.35 },
+        { color: 'rgba(60,160,220,0.65)', baseX: 0.65, baseY: 0.65, radius: 0.60, orbitX: 0.07, orbitY: 0.10, phase: 2.6, speed: 0.28 },
         { color: 'rgba(200,240,255,0.40)', baseX: 0.50, baseY: 0.20, radius: 0.45, orbitX: 0.11, orbitY: 0.05, phase: 5.0, speed: 0.42 }
       ],
       grain: 0.12, blur: 60
@@ -190,24 +190,24 @@
   };
 
   const DEFAULTS = {
-    preset:      'aurora',
-    mode:        'gradient',
-    speed:       1,
+    preset: 'aurora',
+    mode: 'gradient',
+    speed: 1,
     interactive: false,
-    grain:       null,
-    blur:        null,
-    colors:      null,
-    opacity:     1,        // canvas overall opacity (0–1)
-    background:  null,     // override preset background color (CSS color string)
-    grainSpeed:  1,        // grain flicker rate: 0 = static, 1 = every frame
-    onFrame:     null      // callback(t, instance) called each rendered frame
+    grain: null,
+    blur: null,
+    colors: null,
+    opacity: 1,        // canvas overall opacity (0–1)
+    background: null,     // override preset background color (CSS color string)
+    grainSpeed: 1,        // grain flicker rate: 0 = static, 1 = every frame
+    onFrame: null      // callback(t, instance) called each rendered frame
   };
 
   // Replaced/void elements that can't have child nodes
   const VOID_ELEMENTS = new Set([
-    'img','video','audio','canvas','iframe','embed','object',
-    'input','textarea','select','picture','br','hr','wbr',
-    'area','base','col','link','meta','param','source','track'
+    'img', 'video', 'audio', 'canvas', 'iframe', 'embed', 'object',
+    'input', 'textarea', 'select', 'picture', 'br', 'hr', 'wbr',
+    'area', 'base', 'col', 'link', 'meta', 'param', 'source', 'track'
   ]);
 
   // Preset names for wb-{name} CSS class shorthand
@@ -245,26 +245,32 @@
       return undefined;
     };
     return {
-      preset:      get('--wb-background',             '--js-background', '--grad-preset'),
-      mode:        get('--wb-background-mode',        '--js-background-mode', '--grad-mode'),
-      speed:       get('--wb-background-speed',       '--js-background-speed', '--grad-speed'),
+      preset: get('--wb-background', '--js-background', '--grad-preset'),
+      mode: get('--wb-background-mode', '--js-background-mode', '--grad-mode'),
+      speed: get('--wb-background-speed', '--js-background-speed', '--grad-speed'),
       interactive: get('--wb-background-interactive', '--js-background-interactive', '--grad-interactive'),
-      grain:       get('--wb-background-grain',       '--js-background-grain', '--grad-grain'),
-      blur:        get('--wb-background-blur',        '--js-background-blur', '--grad-blur'),
-      opacity:     get('--wb-background-opacity')
+      grain: get('--wb-background-grain', '--js-background-grain', '--grad-grain'),
+      blur: get('--wb-background-blur', '--js-background-blur', '--grad-blur'),
+      opacity: get('--wb-background-opacity'),
+      grainSpeed: get('--wb-background-grain-speed', '--wb-grain-speed'),
+      color1: get('--wb-color-1'),
+      color2: get('--wb-color-2'),
+      color3: get('--wb-color-3'),
     };
   }
 
   function readDataAttrs(el) {
     const d = el.dataset || {};
     return {
-      preset:      d.wbBackground      || d.jsBackground      || d.gradPreset        || d.wonderBgPreset      || undefined,
-      mode:        d.wbBackgroundMode  || d.jsBackgroundMode  || d.gradMode          || d.wonderBgMode        || undefined,
-      speed:       d.wbBackgroundSpeed || d.jsBackgroundSpeed || d.gradSpeed         || d.wonderBgSpeed       || undefined,
-      interactive: d.wbInteractive     || d.jsInteractive     || d.gradInteractive   || d.wonderBgInteractive || undefined,
-      grain:       d.wbGrain           || d.jsGrain           || d.gradGrain         || d.wonderBgGrain       || undefined,
-      blur:        d.wbBlur            || d.jsBlur            || d.gradBlur          || d.wonderBgBlur        || undefined,
-      opacity:     d.wbOpacity                                                                                 || undefined
+      preset: d.wbBackground || d.jsBackground || d.gradPreset || d.wonderBgPreset || undefined,
+      mode: d.wbBackgroundMode || d.jsBackgroundMode || d.gradMode || d.wonderBgMode || undefined,
+      speed: d.wbBackgroundSpeed || d.jsBackgroundSpeed || d.gradSpeed || d.wonderBgSpeed || undefined,
+      interactive: d.wbInteractive || d.jsInteractive || d.gradInteractive || d.wonderBgInteractive || undefined,
+      grain: d.wbGrain || d.jsGrain || d.gradGrain || d.wonderBgGrain || undefined,
+      blur: d.wbBlur || d.jsBlur || d.gradBlur || d.wonderBgBlur || undefined,
+      opacity: d.wbOpacity || undefined,
+      grainSpeed: d.wbGrainSpeed || d.wbBackgroundGrainSpeed || undefined,
+
     };
   }
 
@@ -272,21 +278,21 @@
   function makePick(jsConfig, data, css) {
     return function pick(key) {
       if (jsConfig && jsConfig[key] !== undefined) return jsConfig[key];
-      if (data[key]  !== undefined) return data[key];
-      if (css[key]   !== undefined) return css[key];
+      if (data[key] !== undefined) return data[key];
+      if (css[key] !== undefined) return css[key];
       return undefined;
     };
   }
 
   function resolveConfig(el, jsConfig) {
-    const css  = readCssVars(el);
+    const css = readCssVars(el);
     const data = readDataAttrs(el);
     const presetClass = detectPresetClass(el);
     const pick = makePick(jsConfig, data, css);
 
     const preset = pick('preset') || presetClass || DEFAULTS.preset;
-    const mode   = pick('mode')   || DEFAULTS.mode;
-    const speed  = parseNum(pick('speed'), DEFAULTS.speed);
+    const mode = pick('mode') || DEFAULTS.mode;
+    const speed = parseNum(pick('speed'), DEFAULTS.speed);
     const interactive = parseBool(pick('interactive'), DEFAULTS.interactive);
     const opacity = parseNum(pick('opacity'), DEFAULTS.opacity);
 
@@ -296,9 +302,12 @@
     let blur = pick('blur');
     blur = (blur === undefined || blur === null) ? null : parseNum(blur, null);
 
-    const colors     = (jsConfig && jsConfig.colors)     ? jsConfig.colors     : null;
+    // const colors     = (jsConfig && jsConfig.colors)     ? jsConfig.colors     : null;
+    const cssColors = [css.color1, css.color2, css.color3];
+    const hasCssColors = cssColors.some(Boolean);
+    const colors = (jsConfig && jsConfig.colors) ? jsConfig.colors : hasCssColors ? cssColors : null;
     const background = (jsConfig && jsConfig.background) ? jsConfig.background : null;
-    const onFrame    = (jsConfig && typeof jsConfig.onFrame === 'function') ? jsConfig.onFrame : null;
+    const onFrame = (jsConfig && typeof jsConfig.onFrame === 'function') ? jsConfig.onFrame : null;
     const grainSpeed = parseNum(pick('grainSpeed'), DEFAULTS.grainSpeed);
 
     return { preset, mode, speed, interactive, grain, blur, colors, opacity, background, grainSpeed, onFrame };
@@ -340,8 +349,8 @@
         // FIX: save original styles before modifying
         this._savedVoidStyles = {
           display: origEl.style.display,
-          width:   origEl.style.width,
-          height:  origEl.style.height
+          width: origEl.style.width,
+          height: origEl.style.height
         };
 
         const wrapper = document.createElement('div');
@@ -355,7 +364,7 @@
         } else {
           wrapperCss += 'display:inline-block;';
         }
-        if (origEl.style.width)  wrapperCss += 'width:'  + origEl.style.width  + ';';
+        if (origEl.style.width) wrapperCss += 'width:' + origEl.style.width + ';';
         if (origEl.style.height) wrapperCss += 'height:' + origEl.style.height + ';';
         if (br && br !== '0px') wrapperCss += 'border-radius:' + br + ';';
 
@@ -363,9 +372,9 @@
         origEl.parentNode.insertBefore(wrapper, origEl);
         wrapper.appendChild(origEl);
         origEl.style.display = 'block';
-        origEl.style.width   = '100%';
-        origEl.style.height  = 'auto';
-        this._wrapper  = wrapper;
+        origEl.style.width = '100%';
+        origEl.style.height = 'auto';
+        this._wrapper = wrapper;
         container = wrapper;
       } else {
         const cs = getComputedStyle(origEl);
@@ -407,7 +416,7 @@
       container.insertBefore(canvas, container.firstChild);
 
       this.canvas = canvas;
-      this.ctx    = canvas.getContext('2d');
+      this.ctx = canvas.getContext('2d');
     }
 
     _applyCanvasMode(canvas, mode) {
@@ -490,10 +499,10 @@
     _resize() {
       const target = this._container;
       const rect = target.getBoundingClientRect();
-      const dpr  = Math.min(window.devicePixelRatio || 1, 2);
-      this.width  = Math.max(1, Math.round(rect.width));
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.width = Math.max(1, Math.round(rect.width));
       this.height = Math.max(1, Math.round(rect.height));
-      this.canvas.width  = this.width  * dpr;
+      this.canvas.width = this.width * dpr;
       this.canvas.height = this.height * dpr;
       this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
@@ -528,9 +537,9 @@
       const size = 128;
       if (!this._noiseCanvas) {
         this._noiseCanvas = document.createElement('canvas');
-        this._noiseCanvas.width  = size;
+        this._noiseCanvas.width = size;
         this._noiseCanvas.height = size;
-        this._noiseCtx  = this._noiseCanvas.getContext('2d');
+        this._noiseCtx = this._noiseCanvas.getContext('2d');
         this._noiseFrame = 0;
         // Seed one frame so grain shows immediately
         this._writeNoise(size);
@@ -576,7 +585,7 @@
 
       const colors = preset.blobs.map((b, i) => {
         const from = this._trans.fromColors[i] || b.color;
-        const to   = (this.config.colors && this.config.colors[i]) || b.color;
+        const to = (this.config.colors && this.config.colors[i]) || b.color;
         return lerpRgba(from, to, t);
       });
       if (progress >= 1) this._trans = null;
@@ -584,14 +593,14 @@
     }
 
     _render(t, now) {
-      const ctx    = this.ctx;
+      const ctx = this.ctx;
       const preset = PRESETS[this.config.preset] || PRESETS.aurora;
       const w = this.width, h = this.height;
-      const mode    = this.config.mode;
+      const mode = this.config.mode;
       const rawBlur = this.config.blur !== null ? this.config.blur : preset.blur;
-      const blur    = Math.min(rawBlur, MAX_BLUR);
-      const grain   = this.config.grain !== null ? this.config.grain : preset.grain;
-      const nowMs   = now || performance.now();
+      const blur = Math.min(rawBlur, MAX_BLUR);
+      const grain = this.config.grain !== null ? this.config.grain : preset.grain;
+      const nowMs = now || performance.now();
 
       ctx.clearRect(0, 0, w, h);
 
@@ -757,9 +766,9 @@
       this._destroyed = true;
       if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
       window.removeEventListener('resize', this._onResize);
-      if (this._ro)  this._ro.disconnect();
-      if (this._io)  this._io.disconnect();
-      if (this._mo)  this._mo.disconnect();
+      if (this._ro) this._ro.disconnect();
+      if (this._io) this._io.disconnect();
+      if (this._mo) this._mo.disconnect();
       this._unbindPointer();
 
       if (this.canvas && this.canvas.parentNode) this.canvas.parentNode.removeChild(this.canvas);
@@ -782,8 +791,8 @@
       if (this._wrapper && this._wrapper.parentNode) {
         if (this._savedVoidStyles) {
           this.el.style.display = this._savedVoidStyles.display;
-          this.el.style.width   = this._savedVoidStyles.width;
-          this.el.style.height  = this._savedVoidStyles.height;
+          this.el.style.width = this._savedVoidStyles.width;
+          this.el.style.height = this._savedVoidStyles.height;
         }
         this._wrapper.parentNode.insertBefore(this.el, this._wrapper);
         this._wrapper.parentNode.removeChild(this._wrapper);
