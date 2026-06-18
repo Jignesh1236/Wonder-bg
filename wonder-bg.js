@@ -199,6 +199,7 @@
     colors:      null,
     opacity:     1,        // canvas overall opacity (0–1)
     background:  null,     // override preset background color (CSS color string)
+    grainSpeed:  1,        // grain flicker rate: 0 = static, 1 = every frame
     onFrame:     null      // callback(t, instance) called each rendered frame
   };
 
@@ -298,8 +299,9 @@
     const colors     = (jsConfig && jsConfig.colors)     ? jsConfig.colors     : null;
     const background = (jsConfig && jsConfig.background) ? jsConfig.background : null;
     const onFrame    = (jsConfig && typeof jsConfig.onFrame === 'function') ? jsConfig.onFrame : null;
+    const grainSpeed = parseNum(pick('grainSpeed'), DEFAULTS.grainSpeed);
 
-    return { preset, mode, speed, interactive, grain, blur, colors, opacity, background, onFrame };
+    return { preset, mode, speed, interactive, grain, blur, colors, opacity, background, grainSpeed, onFrame };
   }
 
   // ── Instance ─────────────────────────────────────────────────────────────────
@@ -519,21 +521,35 @@
     }
 
     // ── Animated grain ──────────────────────────────────────────────────────────
-    // FIX: Noise is regenerated every frame for real film-grain flicker.
-    // On mobile, regeneration happens every other frame to save CPU.
+    // grainSpeed: 0 = static (never refresh), 1 = every frame (max flicker).
+    // Intermediate values skip proportionally — e.g. 0.5 = every 2 frames.
+    // On mobile the effective skip rate is doubled for extra perf headroom.
     _refreshNoise() {
       const size = 128;
       if (!this._noiseCanvas) {
         this._noiseCanvas = document.createElement('canvas');
-        this._noiseCanvas.width = size;
+        this._noiseCanvas.width  = size;
         this._noiseCanvas.height = size;
-        this._noiseCtx = this._noiseCanvas.getContext('2d');
+        this._noiseCtx  = this._noiseCanvas.getContext('2d');
         this._noiseFrame = 0;
+        // Seed one frame so grain shows immediately
+        this._writeNoise(size);
       }
-      // Mobile: skip every other frame for perf
-      this._noiseFrame = (this._noiseFrame + 1) | 0;
-      if (isMobile && (this._noiseFrame & 1)) return;
 
+      const gs = this.config.grainSpeed !== null ? this.config.grainSpeed : 1;
+      // grainSpeed 0 → static, never refresh after initial seed
+      if (gs <= 0) return;
+
+      this._noiseFrame = (this._noiseFrame + 1) | 0;
+      // skipRate: how many frames between refreshes
+      // mobile gets extra skip (×2) to save CPU
+      const skipRate = Math.max(1, Math.round((isMobile ? 2 : 1) / gs));
+      if (this._noiseFrame % skipRate !== 0) return;
+
+      this._writeNoise(size);
+    }
+
+    _writeNoise(size) {
       const imgData = this._noiseCtx.createImageData(size, size);
       const data = imgData.data;
       for (let i = 0; i < data.length; i += 4) {

@@ -297,9 +297,10 @@
 
     /* ── Snippet ── */
     #snip-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9;
+      position: fixed; left: 0; right: 0; z-index: 9;
+      bottom: 200px; /* overridden by JS ResizeObserver */
       display: flex; align-items: center; justify-content: center;
-      padding-bottom: 148px; pointer-events: none;
+      pointer-events: none;
     }
     #snip {
       display: flex; align-items: center; gap: 10px;
@@ -330,6 +331,50 @@
       transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), opacity 0.25s;
     }
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── Mobile responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 540px) {
+      /* Panel: full-width, attached to bottom, flat bottom edge */
+      #panel {
+        bottom: 0;
+        border-radius: 16px 16px 0 0;
+        width: 100%;
+        padding: 10px 12px 18px;
+        gap: 8px;
+      }
+
+      /* Mode buttons: shrink text */
+      .mode-btn { font-size: 10px; padding: 6px 4px; }
+      #preset-select { font-size: 11px; padding: 6px 22px 6px 8px; }
+      #pause-btn { padding: 6px 8px; font-size: 12px; }
+
+      /* Controls: 2 columns instead of 4 */
+      #bg-controls { grid-template-columns: 1fr 1fr !important; }
+
+      /* Color row: tighter */
+      .color-row { gap: 6px; }
+      .color-swatch-wrap, .color-swatch { height: 24px; }
+      .reset-colors { font-size: 9px; }
+
+      /* Image card: shrink controls */
+      .card-ctrls { gap: 8px; padding: 9px 11px; }
+      .ic-group { min-width: 0; }
+      #overlay-card { width: 92vw; }
+      #text-card { width: 92vw; }
+
+      /* Snip */
+      #snip { font-size: 10.5px; padding: 6px 10px; max-width: 96vw; }
+      #snip-text { max-width: 70vw; }
+
+      /* Hero */
+      #hero-name { font-size: clamp(2.2rem, 12vw, 5rem); }
+    }
+
+    @media (max-width: 380px) {
+      .mode-btn { font-size: 9px; padding: 5px 3px; }
+      .ic-lbl { font-size: 9px; }
+      #hero-name { font-size: clamp(1.8rem, 14vw, 4rem); }
+    }
   </style>
 </head>
 <body>
@@ -369,6 +414,10 @@
       <div class="ic-group">
         <div class="ic-hd"><span class="ic-lbl">Grain</span><span class="ic-val" id="ic-val-grain">0.06</span></div>
         <input type="range" id="ic-grain" min="0" max="0.4" step="0.01" value="0.06" />
+      </div>
+      <div class="ic-group">
+        <div class="ic-hd"><span class="ic-lbl">Grain Spd</span><span class="ic-val" id="ic-val-grain-speed">1.0</span></div>
+        <input type="range" id="ic-grain-speed" min="0" max="1" step="0.05" value="1" />
       </div>
       <div class="ic-group">
         <div class="ic-hd"><span class="ic-lbl">Speed</span><span class="ic-val" id="ic-val-speed">1.0</span></div>
@@ -461,8 +510,8 @@
 
   <div class="sep" id="sep-controls"></div>
 
-  <!-- bg controls (gradient mode) -->
-  <div id="bg-controls" class="ctrl-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+  <!-- bg controls (gradient mode) — 3×2 grid -->
+  <div id="bg-controls" class="ctrl-grid" style="grid-template-columns:1fr 1fr 1fr;">
     <div class="ctrl">
       <div class="ctrl-hd"><span class="ctrl-lbl">Speed</span><span class="ctrl-num" id="bg-val-speed">1.0</span></div>
       <input type="range" id="bg-speed" min="0.1" max="4" step="0.1" value="1" />
@@ -472,12 +521,16 @@
       <input type="range" id="bg-blur" min="0" max="70" step="1" value="35" />
     </div>
     <div class="ctrl">
+      <div class="ctrl-hd"><span class="ctrl-lbl">Opacity</span><span class="ctrl-num" id="bg-val-opacity">1.0</span></div>
+      <input type="range" id="bg-opacity" min="0" max="1" step="0.05" value="1" />
+    </div>
+    <div class="ctrl">
       <div class="ctrl-hd"><span class="ctrl-lbl">Grain</span><span class="ctrl-num" id="bg-val-grain">auto</span></div>
       <input type="range" id="bg-grain" min="0" max="0.4" step="0.01" value="0.06" />
     </div>
     <div class="ctrl">
-      <div class="ctrl-hd"><span class="ctrl-lbl">Opacity</span><span class="ctrl-num" id="bg-val-opacity">1.0</span></div>
-      <input type="range" id="bg-opacity" min="0" max="1" step="0.05" value="1" />
+      <div class="ctrl-hd"><span class="ctrl-lbl">Grain Speed</span><span class="ctrl-num" id="bg-val-grain-speed">1.0</span></div>
+      <input type="range" id="bg-grain-speed" min="0" max="1" step="0.05" value="1" />
     </div>
   </div>
 
@@ -522,7 +575,8 @@
     customColors: null,
     bgSpeed: 1.0, bgBlur: null, bgGrain: null, bgInter: false, bgOpacity: 1.0,
     bgBlurSet: false, bgGrainSet: false,
-    imgBlur: 28, imgGrain: 0.06, imgSpeed: 1.0, imgInter: false,
+    bgGrainSpeed: 1.0,
+    imgBlur: 28, imgGrain: 0.06, imgSpeed: 1.0, imgInter: false, imgGrainSpeed: 1.0,
     gtSpeed: 1.0, gtAngle: 135,
     paused: false
   };
@@ -606,18 +660,20 @@
   });
 
   /* ── bg sliders ── */
-  wire('bg-speed',   'bg-val-speed',   function (v) { state.bgSpeed = v; stageInst.update({ speed: v }); }, 'f1');
-  wire('bg-blur',    'bg-val-blur',    function (v) { state.bgBlurSet = true; state.bgBlur = v; stageInst.update({ blur: v }); }, 'int');
-  wire('bg-grain',   'bg-val-grain',   function (v) { state.bgGrainSet = true; state.bgGrain = v; stageInst.update({ grain: v }); }, 'f2');
-  wire('bg-opacity', 'bg-val-opacity', function (v) { state.bgOpacity = v; stageInst.update({ opacity: v }); }, 'f1');
+  wire('bg-speed',       'bg-val-speed',       function (v) { state.bgSpeed = v; stageInst.update({ speed: v }); }, 'f1');
+  wire('bg-blur',        'bg-val-blur',        function (v) { state.bgBlurSet = true; state.bgBlur = v; stageInst.update({ blur: v }); }, 'int');
+  wire('bg-grain',       'bg-val-grain',       function (v) { state.bgGrainSet = true; state.bgGrain = v; stageInst.update({ grain: v }); }, 'f2');
+  wire('bg-opacity',     'bg-val-opacity',     function (v) { state.bgOpacity = v; stageInst.update({ opacity: v }); }, 'f1');
+  wire('bg-grain-speed', 'bg-val-grain-speed', function (v) { state.bgGrainSpeed = v; stageInst.update({ grainSpeed: v }); }, 'f1');
   g('bg-interactive').addEventListener('change', function () {
     state.bgInter = this.checked; stageInst.update({ interactive: state.bgInter }); updateSnip();
   });
 
   /* ── image sliders ── */
-  wire('ic-blur',  'ic-val-blur',  function (v) { state.imgBlur  = v; overlayInst.update({ blur: v }); }, 'int');
-  wire('ic-grain', 'ic-val-grain', function (v) { state.imgGrain = v; overlayInst.update({ grain: v }); }, 'f2');
-  wire('ic-speed', 'ic-val-speed', function (v) { state.imgSpeed = v; overlayInst.update({ speed: v }); }, 'f1');
+  wire('ic-blur',        'ic-val-blur',        function (v) { state.imgBlur  = v; overlayInst.update({ blur: v }); }, 'int');
+  wire('ic-grain',       'ic-val-grain',       function (v) { state.imgGrain = v; overlayInst.update({ grain: v }); }, 'f2');
+  wire('ic-grain-speed', 'ic-val-grain-speed', function (v) { state.imgGrainSpeed = v; overlayInst.update({ grainSpeed: v }); }, 'f1');
+  wire('ic-speed',       'ic-val-speed',       function (v) { state.imgSpeed = v; overlayInst.update({ speed: v }); }, 'f1');
   g('ic-interactive').addEventListener('change', function () {
     state.imgInter = this.checked; overlayInst.update({ interactive: state.imgInter }); updateSnip();
   });
@@ -706,13 +762,15 @@
       blur:  state.bgBlurSet  ? state.bgBlur  : null,
       grain: state.bgGrainSet ? state.bgGrain : null,
       interactive: state.bgInter,
-      opacity: state.bgOpacity
+      opacity: state.bgOpacity,
+      grainSpeed: state.bgGrainSpeed
     });
     overlayInst.update({
       preset: state.preset,
       mode:   m === 'grain' ? 'grain' : 'tint',
       blur:   state.imgBlur, grain: state.imgGrain,
-      speed:  state.imgSpeed, interactive: state.imgInter
+      speed:  state.imgSpeed, interactive: state.imgInter,
+      grainSpeed: state.imgGrainSpeed
     });
 
     applyColors();
@@ -761,6 +819,26 @@
     clearTimeout(toastT);
     toastT = setTimeout(function () { t.classList.remove('show'); }, 2000);
   }
+
+  /* ── Dynamic snip bar positioning ────────────────────────────────────────
+     Measures the panel height each time it resizes (e.g. when controls show/
+     hide on mode switch or on mobile layout changes) and keeps the snip bar
+     floating 10px above the panel top edge — fixing the "copy button goes
+     under the UI" problem on mobile.                                        */
+  (function () {
+    var panel   = g('panel');
+    var snipBar = g('snip-bar');
+    function positionSnip() {
+      var panelH  = panel.offsetHeight;
+      var panelBt = parseInt(getComputedStyle(panel).bottom, 10) || 0;
+      snipBar.style.bottom = (panelH + panelBt + 10) + 'px';
+    }
+    positionSnip();
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(positionSnip).observe(panel);
+    }
+    window.addEventListener('resize', positionSnip);
+  })();
 
   /* init */
   applyAll();

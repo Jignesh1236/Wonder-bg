@@ -50,6 +50,8 @@ export interface WonderBGConfig {
   opacity?:            number;
   /** Override the preset's dark background colour (any CSS colour string). */
   background?:         string | null;
+  /** Grain flicker rate: 0 = static texture, 1 = refresh every frame (max flicker). Default: 1. */
+  grainSpeed?:         number;
   /** Smooth preset-switch transition duration in seconds. Default: 0.6. Pass 0 to disable. */
   transitionDuration?: number;
   /** Callback fired after each rendered frame: (t: number, instance: WonderBGInstance) => void */
