@@ -1,7 +1,6 @@
 /*!
  * Wonder Backgrounds v1.5.0
  * Animated organic gradient backgrounds — drop-in, zero-dependency, framework-agnostic.
- *
  * Works on ANY element including <img>, <video>, <p>, <h1>, <button>, etc.
  * Void/replaced elements are auto-wrapped in a container — no manual markup needed.
  *
